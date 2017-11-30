@@ -1,0 +1,29 @@
+{
+  "name": "ico-crowdsale",
+  "version": "0.1.0",
+  "description": "ICO Crowdsale",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MyWishPlatform/ico-crowdsale.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MyWishPlatform/ico-crowdsale/issues"
+  },
+  "homepage": "https://github.com/MyWishPlatform/ico-crowdsale#readme",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "ganache-cli": "^6.0.3",
+    "truffle": "^4.0.1",
+    "zeppelin-solidity": "^1.4.0"
+  }
+}
