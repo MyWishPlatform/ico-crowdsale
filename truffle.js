@@ -3,20 +3,26 @@ const ether = '0000000000000000000';
 
 module.exports = {
     networks: {
-        test: {
+        ganache: {
             network_id: "*",
             provider: ganache.provider({
-                total_accounts: 100,
-                time: new Date("2017-10-10T15:00:00Z"),
-                debug: false
+                accounts: [10, 100, 10000, 1000000].map(function (v) {
+                    return {balance: "" + v + ether};
+                }),
+                // time: new Date("2017-10-10T15:00:00Z")
             })
+        },
+        localhost: {
+            host: "localhost",
+            port: 8545,
+            network_id: "*" // Match any network id
         }
     },
-    network: 'test',
     solc: {
         optimizer: {
             enabled: true,
             runs: 200
         }
-    }
+    },
+    network: 'localhost'
 };
