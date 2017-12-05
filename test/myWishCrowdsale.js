@@ -1,9 +1,8 @@
-console.log(123123)
-
-let chai = require("chai");
-let chaiAsPromised = require("chai-as-promised");
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
+const BigNumber = require("bignumber.js");
 
 const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
 // const Token = artifacts.require("./MyWishToken.sol");

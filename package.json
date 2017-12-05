@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/MyWishPlatform/ico-crowdsale#readme",
   "dependencies": {
+    "bignumber.js": "^4.1.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "ganache-cli": "^6.0.3",
