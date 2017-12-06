@@ -71,58 +71,58 @@ contract MyWishCrowdsale is usingMyWishConsts, RefundableCrowdsale, CappedCrowds
     }
 
     // Low level token purchase function
-//    function buyTokens(address beneficiary) payable {
-//        require(beneficiary != 0x0);
-//        uint amountWei = msg.value;
-//
-//        // Total minted tokens
-//        uint totalSupply = token.totalSupply();
-//
-//        // Actual token minting rate (with considering bonuses and discounts)
-//        uint actualRate = rate;
-//
-//        require(validPurchase(amountWei, actualRate, totalSupply));
-//
-//        // Calculate token amount to be created
-//        // uint tokens = rate.mul(msg.value).div(1 ether);
-//        uint tokens = amountWei.mul(actualRate);
-//
-//        if (msg.value == 0) { // if it is a btc purchase then check existence all tokens (no change)
-//            require(tokens.add(totalSupply) <= cap);
-//        }
-//
-//        // Change, if minted token would be less
-//        uint change = 0;
-//
-//        // If hard cap reached
-//        if (tokens.add(totalSupply) > cap) {
-//            // Rest tokens
-//            uint maxTokens = cap.sub(totalSupply);
-//            uint realAmount = maxTokens.div(actualRate);
-//
-//            // Rest tokens rounded by actualRate
-//            tokens = realAmount.mul(actualRate);
-//            change = amountWei.sub(realAmount);
-//            amountWei = realAmount;
-//        }
-//
-//        // Bonuses
-//        postBuyTokens(beneficiary, tokens);
-//
-//        // Update state
-//        weiRaised = weiRaised.add(amountWei);
-//        soldTokens = soldTokens.add(tokens);
-//
-//        token.mint(beneficiary, tokens);
-//        TokenPurchase(msg.sender, beneficiary, amountWei, tokens);
-//
-//        if (msg.value != 0) {
-//            if (change != 0) {
-//                msg.sender.transfer(change);
-//            }
-//            forwardFunds(amountWei);
-//        }
-//    }
+    function buyTokens(address beneficiary) public payable {
+        require(beneficiary != 0x0);
+        uint amountWei = msg.value;
+
+        // Total minted tokens
+        uint totalSupply = token.totalSupply();
+
+        // Actual token minting rate (with considering bonuses and discounts)
+        uint actualRate = rate;
+
+        require(validPurchase(amountWei, actualRate, totalSupply));
+
+        // Calculate token amount to be created
+        // uint tokens = rate.mul(msg.value).div(1 ether);
+        uint tokens = amountWei.mul(actualRate);
+
+        if (msg.value == 0) { // if it is a btc purchase then check existence all tokens (no change)
+            require(tokens.add(totalSupply) <= cap);
+        }
+
+        // Change, if minted token would be less
+        uint change = 0;
+
+        // If hard cap reached
+        if (tokens.add(totalSupply) > cap) {
+            // Rest tokens
+            uint maxTokens = cap.sub(totalSupply);
+            uint realAmount = maxTokens.div(actualRate);
+
+            // Rest tokens rounded by actualRate
+            tokens = realAmount.mul(actualRate);
+            change = amountWei.sub(realAmount);
+            amountWei = realAmount;
+        }
+
+        // Bonuses
+        postBuyTokens(beneficiary, tokens);
+
+        // Update state
+        weiRaised = weiRaised.add(amountWei);
+        soldTokens = soldTokens.add(tokens);
+
+        token.mint(beneficiary, tokens);
+        TokenPurchase(msg.sender, beneficiary, amountWei, tokens);
+
+        if (msg.value != 0) {
+            if (change != 0) {
+                msg.sender.transfer(change);
+            }
+            forwardFunds(amountWei);
+        }
+    }
 
     // Send ether to the fund collection wallet
     // Override to create custom fund forwarding mechanisms
