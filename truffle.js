@@ -8,10 +8,10 @@ module.exports = {
             provider: ganache.provider({
                 accounts: [10, 100, 10000, 1000000].map(function (v) {
                     return {balance: "" + v + ether};
-                })
-                , time: new Date("2017-10-10T15:00:00Z")
-                , debug: false
-                // , logger: console
+                }),
+                time: new Date("2017-10-10T15:00:00Z"),
+                debug: false,
+                // logger: console
             })
         },
         localhost: {

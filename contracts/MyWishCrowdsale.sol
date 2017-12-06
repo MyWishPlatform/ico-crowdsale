@@ -163,4 +163,8 @@ contract MyWishCrowdsale is usingMyWishConsts, RefundableCrowdsale, CappedCrowds
 
         return withinPeriod && nonZeroPurchase && hardCapNotReached;
     }
+
+    function hasStarted() public constant returns (bool) {
+        return now >= startTime;
+    }
 }

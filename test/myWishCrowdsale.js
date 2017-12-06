@@ -3,6 +3,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
 const BigNumber = require("bignumber.js");
+const {increaseTime, revert, snapshot} = require('./evmMethods');
 
 const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
 // const Token = artifacts.require("./MyWishToken.sol");
@@ -26,92 +27,63 @@ const initTime = (now) => {
 
 initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
-contract('Crowdsale', function (accounts) {
+contract('Crowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
-    const REACH_MAN = accounts[3];
-    // const RATE_30 = 1950;
+    const RICH_MAN = accounts[3];
+    const RATE = 240;
 
-    // const increaseTime = addSeconds => {
-    //     return new Promise((resolve, reject) => {
-    //         web3.currentProvider.sendAsync(
-    //             {jsonrpc: "2.0", method: "evm_increaseTime", params: [addSeconds], id: 0},
-    //             function (error, result) {
-    //                 if (error) {
-    //                     reject(error);
-    //                 } else {
-    //                     initTime(NOW + addSeconds);
-    //                     resolve(result);
-    //                 }
-    //             }
-    //         );
-    //     });
-    // };
-    // const snapshot = () => {
-    //     return new Promise((resolve, reject) => {
-    //         web3.currentProvider.sendAsync(
-    //             {jsonrpc: "2.0", method: "evm_snapshot", params: [], id: 0},
-    //             function (error, result) {
-    //                 if (error) {
-    //                     reject(error);
-    //                 } else {
-    //                     resolve(result);
-    //                 }
-    //             }
-    //         );
-    //     });
-    // };
-    // const restore = (id) => {
-    //     return new Promise((resolve, reject) => {
-    //         web3.currentProvider.sendAsync(
-    //             {jsonrpc: "2.0", method: "evm_restore", params: [id], id: 0},
-    //             function (error, result) {
-    //                 if (error) {
-    //                     reject(error);
-    //                 } else {
-    //                     resolve(result);
-    //                 }
-    //             }
-    //         );
-    //     });
-    // };
-    //
-    // it('#0', function () {
-    //     accounts.forEach(function (account, index) {
-    //         web3.eth.getBalance(account, function (_, balance) {
-    //             console.info("Account " + index + " (" + account + ") balance is " + web3.fromWei(balance, "ether"));
-    //         });
-    //     });
-    // });
-    //
-    // it('#1 construct', async () => {
-    //     // snapshotId = (await snapshot()).result;
-    //     const crowdsale = await Crowdsale.deployed();
-    //     (await crowdsale.token()).should.have.length(42);
-    // });
-    //
-    // it('#2 check started', async () => {
-    //     const crowdsale = await Crowdsale.new(YESTERDAY, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
-    //     (await crowdsale.hasStarted()).should.be.equals(true);
-    // });
-    //
-    // it('#3 check not yet started', async () => {
-    //     const crowdsale = await Crowdsale.new(TOMORROW, DAY_AFTER_TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
-    //     (await crowdsale.hasStarted()).should.be.equals(false);
-    // });
-    //
-    // it('#4 check already finished', async () => {
-    //     const crowdsale = await Crowdsale.new(DAY_BEFORE_YESTERDAY, YESTERDAY, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
-    //     (await crowdsale.hasStarted()).should.be.equals(true);
-    //     (await crowdsale.hasEnded()).should.be.equals(true);
-    // });
-    //
+    let snapshotId;
+
+    beforeEach(async () => {
+        snapshotId = (await snapshot()).result;
+        console.info("Snapshot is", snapshotId);
+    });
+
+    afterEach(async () => {
+        console.info("Reverting...");
+        await revert(snapshotId);
+        console.info("Reverted to ", snapshotId);
+    });
+
+    it('#0', () => {
+        accounts.forEach((account, index) => {
+            web3.eth.getBalance(account, (_, balance) => {
+                const etherBalance = web3.fromWei(balance, "ether");
+                console.info(`Account ${index} (${account}) balance is ${etherBalance}`)
+            });
+        });
+    });
+
+    it('#1 construct', async () => {
+        const crowdsale = await Crowdsale.deployed();
+        (await crowdsale.token()).should.have.length(42);
+    });
+
+    it('#2 check started', async () => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        (await crowdsale.hasStarted()).should.be.equals(true);
+    });
+
+    it('#3 check not yet started', async () => {
+        const crowdsale = await Crowdsale.new(TOMORROW, DAY_AFTER_TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        (await crowdsale.hasStarted()).should.be.equals(false);
+    });
+
+    it('#4 check already finished', async () => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        await increaseTime(2 * DAY);
+        (await crowdsale.hasStarted()).should.be.equals(true);
+        (await crowdsale.hasEnded()).should.be.equals(true);
+    });
+
     // it('#5 check simple buy token', async () => {
-    //     const crowdsale = await Crowdsale.new(YESTERDAY, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+    //     const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+    //     await increaseTime(2 * DAY);
     //     const ETH = web3.toWei(1, 'ether');
-    //     // const TOKENS = ETH * RATE_30;
-    //     await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
+    //     const TOKENS = ETH * RATE;
+    //     await web3.eth.sendTransaction({from: BUYER_1, value: ETH, to: crowdsale.address});
     //     const token = Token.at(await crowdsale.token());
     //     (await token.balanceOf(BUYER_1)).toNumber().should.be.equals(TOKENS);
     //     (await new Promise(function (resolve, reject) {
@@ -124,7 +96,7 @@ contract('Crowdsale', function (accounts) {
     //         })
     //     })).toNumber().should.be.equals(Number(ETH), 'money should be on cold wallet');
     // });
-    //
+
     // it('#6 check buy bonuses', async () => {
     //     const ethBonus = [
     //         web3.toWei(10, 'ether'),
