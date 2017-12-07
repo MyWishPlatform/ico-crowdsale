@@ -7,14 +7,11 @@ const {increaseTime, revert, snapshot, mineBlock} = require('./evmMethods');
 const utils = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
-// const Token = artifacts.require("./MyWishToken.sol");
-// const BonusProvider = artifacts.require("./MyWishBonusProvider.sol");
+const Token = artifacts.require("./MyWishToken.sol");
 
 // const PRE_SOLD_TOKENS = 8200000;
-const DIGITS = 18;
-const POWER = new BigNumber(10).pow(DIGITS);
-const SOFT_CAP_TOKENS = new BigNumber(1000000).mul(POWER);
-const HARD_CAP_TOKENS = new BigNumber(22000000).mul(POWER);
+const SOFT_CAP_TOKENS = web3.toWei(1000000);
+const HARD_CAP_TOKENS = web3.toWei(22000000);
 const COLD_WALLET = '0x123';
 const DAY = 24 * 3600;
 
@@ -41,18 +38,17 @@ contract('Crowdsale', accounts => {
 
     beforeEach(async () => {
         snapshotId = (await snapshot()).result;
-        console.info("Snapshot is", snapshotId);
-        await mineBlock();
+        // console.info("Snapshot is", snapshotId);
         const block = await utils.web3async(web3.eth, web3.eth.getBlock, 'latest');
         const blockTime = block.timestamp;
-        console.info("Move time to ", blockTime);
+        // console.info("Move time to ", blockTime);
         initTime(blockTime);
     });
 
     afterEach(async () => {
-        console.info("Reverting...");
+        // console.info("Reverting...");
         await revert(snapshotId);
-        console.info("Reverted to ", snapshotId);
+        // console.info("Reverted to ", snapshotId);
     });
 
     it('#0', () => {
@@ -70,8 +66,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#2 check started', async () => {
-        const crowdsale = await Crowdsale.new(NOW + 10, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
-        await increaseTime(20);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
         (await crowdsale.hasStarted()).should.be.equals(true);
     });
 
@@ -81,23 +76,20 @@ contract('Crowdsale', accounts => {
     });
 
     it('#4 check already finished', async () => {
-        const crowdsale = await Crowdsale.new(NOW + 10, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
         await increaseTime(2 * DAY);
         (await crowdsale.hasStarted()).should.be.equals(true);
         (await crowdsale.hasEnded()).should.be.equals(true);
     });
 
     it('#5 check simple buy token', async () => {
-        const crowdsale = await Crowdsale.new(NOW + 10, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
-
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
         await increaseTime(DAY / 2);
         const ETH = web3.toWei(1, 'ether');
         const TOKENS = ETH * RATE;
-        console.log("send");
         await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
-        console.log("done");
         const token = Token.at(await crowdsale.token());
-        (await token.balanceOf(BUYER_1)).toNumber().should.be.equals(TOKENS);
+        (await token.balanceOf(BUYER_1)).toString().should.be.equals(TOKENS.toString());
         (await new Promise(function (resolve, reject) {
             web3.eth.getBalance(COLD_WALLET, function (error, result) {
                 if (error) {
@@ -106,6 +98,23 @@ contract('Crowdsale', accounts => {
                     resolve(result);
                 }
             })
-        })).toNumber().should.be.equals(Number(ETH), 'money should be on cold wallet');
+        })).toString().should.be.equals(ETH.toString(), 'money should be on cold wallet');
+    });
+
+    it('#6 check hard cap', async() => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+
+        const eth = new BigNumber(HARD_CAP_TOKENS).div(RATE).toNumber();
+        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+
+        const moreOne = web3.toWei(2, 'ether');
+        try {
+            await crowdsale.sendTransaction({from: BUYER_1, value: moreOne});
+        } catch (error) {
+            error.message.search('invalid opcode').should.be.greaterThan(0, 'error should be "invalid opcode"');
+            await crowdsale.sendTransaction({from: BUYER_1, value: moreOne});
+            return;
+        }
+        assert.fail(true, false, 'Transaction must be failed because of hardcap.');
     });
 });

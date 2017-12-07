@@ -14,7 +14,6 @@ const mineBlock = () => {
 };
 
 module.exports = {
-    mineBlock: mineBlock,
     increaseTime: addSeconds => {
         return new Promise((resolve, reject) => {
             web3.currentProvider.sendAsync(
@@ -37,7 +36,7 @@ module.exports = {
                     if (error) {
                         reject(error);
                     } else {
-                        resolve(result);
+                        mineBlock().then(() => resolve(result));
                     }
                 }
             );
