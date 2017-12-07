@@ -11,8 +11,10 @@ const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
 // const BonusProvider = artifacts.require("./MyWishBonusProvider.sol");
 
 // const PRE_SOLD_TOKENS = 8200000;
-const SOFT_CAP_TOKENS = 1000000;
-const HARD_CAP_TOKENS = 22000000;
+const DIGITS = 18;
+const POWER = new BigNumber(10).pow(DIGITS);
+const SOFT_CAP_TOKENS = new BigNumber(1000000).mul(POWER);
+const HARD_CAP_TOKENS = new BigNumber(22000000).mul(POWER);
 const COLD_WALLET = '0x123';
 const DAY = 24 * 3600;
 
