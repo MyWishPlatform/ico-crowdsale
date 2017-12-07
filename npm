@@ -1,0 +1,5 @@
+# solution for run NPM in sshfs
+if [ ! -f ./preload.so ]; then
+    echo "int chown() { return 0; }" > preload.c && gcc -shared -o preload.so preload.c
+fi
+LD_PRELOAD=$PWD/preload.so npm "$@"
