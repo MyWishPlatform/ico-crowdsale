@@ -46,13 +46,13 @@ contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, Pausabl
         excluded[_toExclude] = true;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) whenNotPaused returns (bool _success) {
-        require(excluded[_from]);
+    function transferFrom(address _from, address _to, uint256 _value) returns (bool _success) {
+        require(!paused || excluded[_from]);
         return super.transferFrom(_from, _to, _value);
     }
 
-    function transfer(address _to, uint256 _value) whenNotPaused returns (bool _success) {
-        require(excluded[msg.sender]);
+    function transfer(address _to, uint256 _value) returns (bool _success) {
+        require(!paused || excluded[msg.sender]);
         return super.transfer(_to, _value);
     }
 
