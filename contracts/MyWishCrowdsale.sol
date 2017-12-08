@@ -35,4 +35,10 @@ contract MyWishCrowdsale is usingMyWishConsts, RefundableCrowdsale, CappedCrowds
     function hasStarted() public constant returns (bool) {
         return now >= startTime;
     }
+
+    function finalization() internal {
+        super.finalization();
+        MyWishToken(token).crowdsaleFinished();
+        token.transferOwnership(owner);
+    }
 }

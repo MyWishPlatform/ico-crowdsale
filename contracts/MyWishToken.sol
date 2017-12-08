@@ -36,6 +36,7 @@ contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, Pausabl
 
     function crowdsaleFinished() onlyOwner {
         paused = false;
+        finishMinting();
     }
 
     function addExcluded(address _toExclude) onlyOwner {

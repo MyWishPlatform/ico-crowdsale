@@ -111,4 +111,27 @@ contract('Crowdsale', accounts => {
         }
         assert.fail(true, false, 'Transaction must be failed because of hardcap.');
     });
+
+    it('#8 check finish crowdsale after time', async() => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const token = Token.at(await crowdsale.token());
+        // send some tokens
+        await crowdsale.send(web3.toWei(1, 'ether'));
+        try {
+            // try to finalize before the END
+            await crowdsale.finalize();
+        }
+        catch (error) {
+            await increaseTime(DAY + 120);
+            // finalize after the END time
+            await crowdsale.finalize();
+            // try to transfer some tokens (it should work now)
+            const tokens = web3.toWei(100, 'ether');
+            await token.transfer(BUYER_1, tokens);
+            (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
+            (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
+            return;
+        }
+        assert.fail(true, false, 'Finalize should not work before ended.');
+    });
 });
