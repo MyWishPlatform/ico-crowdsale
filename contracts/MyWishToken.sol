@@ -34,10 +34,6 @@ contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, Pausabl
         return TOKEN_DECIMALS_UINT8;
     }
 
-    function balanceOf(address _owner) constant public returns (uint256 _balance) {
-        super.balanceOf(_owner);
-    }
-
     function crowdsaleFinished() onlyOwner {
         paused = false;
     }
