@@ -2,26 +2,21 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
-const BigNumber = require("bignumber.js");
-const {increaseTime, revert, snapshot, mineBlock} = require('./evmMethods');
-const utils = require('./web3Utils');
+const {increaseTime, revert, snapshot} = require('./evmMethods');
+const {web3async} = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
 const Token = artifacts.require("./MyWishToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
 
-// const PRE_SOLD_TOKENS = 8200000;
 const SOFT_CAP_TOKENS = 1000000;
 const HARD_CAP_TOKENS = 22000000;
-const COLD_WALLET = '0x80826b5b717aDd3E840343364EC9d971FBa3955C';
 const DAY = 24 * 3600;
 
-let NOW, YESTERDAY, DAY_BEFORE_YESTERDAY, TOMORROW, DAY_AFTER_TOMORROW;
+let NOW, TOMORROW, DAY_AFTER_TOMORROW;
 
 const initTime = (now) => {
     NOW = now;
-    YESTERDAY = now - DAY;
-    DAY_BEFORE_YESTERDAY = YESTERDAY - DAY;
     TOMORROW = now + DAY;
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
@@ -39,25 +34,20 @@ contract('Crowdsale', accounts => {
 
     beforeEach(async () => {
         snapshotId = (await snapshot()).result;
-        // console.info("Snapshot is", snapshotId);
-        const block = await utils.web3async(web3.eth, web3.eth.getBlock, 'latest');
+        const block = await web3async(web3.eth, web3.eth.getBlock, 'latest');
         const blockTime = block.timestamp;
-        // console.info("Move time to ", blockTime);
         initTime(blockTime);
     });
 
     afterEach(async () => {
-        // console.info("Reverting...");
         await revert(snapshotId);
-        // console.info("Reverted to ", snapshotId);
     });
 
-    it('#0', () => {
-        accounts.forEach((account, index) => {
-            web3.eth.getBalance(account, (_, balance) => {
-                const etherBalance = web3.fromWei(balance, "ether");
-                console.info(`Account ${index} (${account}) balance is ${etherBalance}`)
-            });
+    it('#0 balances', () => {
+        accounts.forEach(async (account, index) => {
+            const balance = await web3async(web3.eth, web3.eth.getBalance, account);
+            const etherBalance = web3.fromWei(balance, "ether");
+            console.info(`Account ${index} (${account}) balance is ${etherBalance}`)
         });
     });
 
@@ -93,8 +83,8 @@ contract('Crowdsale', accounts => {
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(TOKENS.toString());
 
         const vault = RefundVault.at(await crowdsale.vault());
-        const vaultBalance = await utils.web3async(web3.eth, web3.eth.getBalance, vault.address);
-        vaultBalance.toString().should.be.equals(ETH.toString(), 'money should be on cold wallet');
+        const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
+        vaultBalance.toString().should.be.equals(ETH.toString(), 'money should be on vault');
     });
 
     it('#6 check hard cap', async () => {
@@ -150,7 +140,7 @@ contract('Crowdsale', accounts => {
         assert.fail(true, false, 'Token transfer must be locked.');
     });
 
-    it('#9 check finish crowdsale because hardcap', async() => {
+    it('#9 check finish crowdsale because hardcap', async () => {
         const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
         const token = Token.at(await crowdsale.token());
 
@@ -163,7 +153,7 @@ contract('Crowdsale', accounts => {
         (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
     });
 
-    it('#10 check that excluded can transfer', async() => {
+    it('#10 check that excluded can transfer', async () => {
         const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
         const token = Token.at(await crowdsale.token());
 

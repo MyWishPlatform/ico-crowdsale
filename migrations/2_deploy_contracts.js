@@ -1,3 +1,4 @@
+const MyWishToken = artifacts.require("./MyWishToken.sol");
 const MyWishCrowdsale = artifacts.require("./MyWishCrowdsale.sol");
 
 module.exports = function(deployer, network, accounts) {
@@ -7,6 +8,7 @@ module.exports = function(deployer, network, accounts) {
     const softCap = new web3.BigNumber(1000000);
     const hardCap = new web3.BigNumber(22000000);
 
+    deployer.deploy(MyWishToken);
     deployer.deploy(
         MyWishCrowdsale,
         startTime,
