@@ -162,4 +162,20 @@ contract('Crowdsale', accounts => {
         await crowdsale.finalize();
         (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
     });
+
+    it('#10 check that excluded can transfer', async() => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const token = Token.at(await crowdsale.token());
+
+        // buy some
+        await crowdsale.send(web3.toWei(1, 'ether'));
+        // exclude owner
+        await crowdsale.addExcluded(OWNER);
+
+        const tokens = web3.toWei(100, 'ether');
+        // try to transfer
+        await token.transfer(BUYER_1, tokens);
+        // check balance
+        (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
+    })
 });

@@ -4,10 +4,10 @@ import "./MyWishConsts.sol";
 import "./MyWishFreezingStorage.sol";
 import "zeppelin-solidity/contracts/token/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/BurnableToken.sol";
-import "zeppelin-solidity/contracts/token/PausableToken.sol";
+import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "zeppelin-solidity/contracts/token/TokenTimelock.sol";
 
-contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, PausableToken {
+contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, Pausable {
 
     event MintTimelocked(address indexed beneficiary, uint amount);
 
@@ -51,6 +51,21 @@ contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, Pausabl
     function transfer(address _to, uint256 _value) returns (bool _success) {
         require(!paused || excluded[msg.sender]);
         return super.transfer(_to, _value);
+    }
+
+    function approve(address _spender, uint256 _value) public returns (bool) {
+        require(!paused || excluded[msg.sender]);
+        return super.approve(_spender, _value);
+    }
+
+    function increaseApproval(address _spender, uint _addedValue) public returns (bool success) {
+        require(!paused || excluded[msg.sender]);
+        return super.increaseApproval(_spender, _addedValue);
+    }
+
+    function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool success) {
+        require(!paused || excluded[msg.sender]);
+        return super.decreaseApproval(_spender, _subtractedValue);
     }
 
     /**
