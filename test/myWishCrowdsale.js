@@ -8,11 +8,12 @@ const utils = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
 const Token = artifacts.require("./MyWishToken.sol");
+const RefundVault = artifacts.require("./RefundVault.sol");
 
 // const PRE_SOLD_TOKENS = 8200000;
-const SOFT_CAP_TOKENS = web3.toWei(1000000);
-const HARD_CAP_TOKENS = web3.toWei(22000000);
-const COLD_WALLET = '0x123';
+const SOFT_CAP_TOKENS = 1000000;
+const HARD_CAP_TOKENS = 22000000;
+const COLD_WALLET = '0x80826b5b717aDd3E840343364EC9d971FBa3955C';
 const DAY = 24 * 3600;
 
 let NOW, YESTERDAY, DAY_BEFORE_YESTERDAY, TOMORROW, DAY_AFTER_TOMORROW;
@@ -90,29 +91,22 @@ contract('Crowdsale', accounts => {
         await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
         const token = Token.at(await crowdsale.token());
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(TOKENS.toString());
-        (await new Promise(function (resolve, reject) {
-            web3.eth.getBalance(COLD_WALLET, function (error, result) {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            })
-        })).toString().should.be.equals(ETH.toString(), 'money should be on cold wallet');
+
+        const vault = RefundVault.at(await crowdsale.vault());
+        const vaultBalance = await utils.web3async(web3.eth, web3.eth.getBalance, vault.address);
+        vaultBalance.toString().should.be.equals(ETH.toString(), 'money should be on cold wallet');
     });
 
     it('#6 check hard cap', async() => {
         const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
 
-        const eth = new BigNumber(HARD_CAP_TOKENS).div(RATE).toNumber();
+        const eth = web3.toWei(Math.floor(HARD_CAP_TOKENS / RATE));
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
 
-        const moreOne = web3.toWei(2, 'ether');
+        const moreOne = web3.toWei(1, 'ether');
         try {
             await crowdsale.sendTransaction({from: BUYER_1, value: moreOne});
         } catch (error) {
-            error.message.search('invalid opcode').should.be.greaterThan(0, 'error should be "invalid opcode"');
-            await crowdsale.sendTransaction({from: BUYER_1, value: moreOne});
             return;
         }
         assert.fail(true, false, 'Transaction must be failed because of hardcap.');
