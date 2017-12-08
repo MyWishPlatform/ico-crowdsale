@@ -33,7 +33,7 @@ contract('Crowdsale', accounts => {
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
     const RICH_MAN = accounts[3];
-    const RATE = 240;
+    const RATE = 250;
 
     let snapshotId;
 
@@ -97,7 +97,7 @@ contract('Crowdsale', accounts => {
         vaultBalance.toString().should.be.equals(ETH.toString(), 'money should be on cold wallet');
     });
 
-    it('#6 check hard cap', async() => {
+    it('#6 check hard cap', async () => {
         const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
 
         const eth = web3.toWei(Math.floor(HARD_CAP_TOKENS / RATE));
@@ -112,7 +112,7 @@ contract('Crowdsale', accounts => {
         assert.fail(true, false, 'Transaction must be failed because of hardcap.');
     });
 
-    it('#8 check finish crowdsale after time', async() => {
+    it('#7 check finish crowdsale after time', async () => {
         const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
         const token = Token.at(await crowdsale.token());
         // send some tokens
@@ -133,5 +133,33 @@ contract('Crowdsale', accounts => {
             return;
         }
         assert.fail(true, false, 'Finalize should not work before ended.');
+    });
+
+    it('#8 check that tokens are locked', async () => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const token = Token.at(await crowdsale.token());
+
+        await crowdsale.send(web3.toWei(1, 'ether'));
+
+        try {
+            await token.transfer(BUYER_1, web3.toWei(100, 'ether'));
+        }
+        catch (error) {
+            return;
+        }
+        assert.fail(true, false, 'Token transfer must be locked.');
+    });
+
+    it('#9 check finish crowdsale because hardcap', async() => {
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const token = Token.at(await crowdsale.token());
+
+        // reach hard cap
+        const eth = web3.toWei(Math.floor(HARD_CAP_TOKENS / RATE));
+        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+
+        // finalize
+        await crowdsale.finalize();
+        (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
     });
 });

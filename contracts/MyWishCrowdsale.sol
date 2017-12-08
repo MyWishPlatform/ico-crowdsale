@@ -27,7 +27,6 @@ contract MyWishCrowdsale is usingMyWishConsts, RefundableCrowdsale, CappedCrowds
     }
 
     // Send ether to the fund collection wallet
-    // Override to create custom fund forwarding mechanisms
     function forwardFunds(uint amountWei) internal {
         wallet.transfer(amountWei);
     }
