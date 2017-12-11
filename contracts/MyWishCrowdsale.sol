@@ -7,12 +7,12 @@ import "./MyWishToken.sol";
 
 contract MyWishCrowdsale is usingMyWishConsts, RefundableCrowdsale, CappedCrowdsale {
 
-    function MyWishCrowdsale(uint _startTime, uint _endTime, uint _softCap, uint _hardCap)
+    function MyWishCrowdsale(uint _startTime, uint _endTime)
         Crowdsale(_startTime, _endTime, RATE, COLD_WALLET)
-        CappedCrowdsale(_hardCap * TOKEN_DECIMAL_MULTIPLIER / RATE)
-        RefundableCrowdsale(_softCap * TOKEN_DECIMAL_MULTIPLIER / RATE)
+        CappedCrowdsale(HARD_CAP_TOKENS * TOKEN_DECIMAL_MULTIPLIER / RATE)
+        RefundableCrowdsale(SOFT_CAP_TOKENS * TOKEN_DECIMAL_MULTIPLIER / RATE)
     {
-        require(_softCap <= _hardCap);
+        require(SOFT_CAP_TOKENS <= HARD_CAP_TOKENS);
     }
 
     /**

@@ -9,8 +9,8 @@ const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
 const Token = artifacts.require("./MyWishToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
 
-const SOFT_CAP_TOKENS = 1000000;
-const HARD_CAP_TOKENS = 22000000;
+const SOFT_CAP_TOKENS = T_SOFT_CAP_TOKENS;
+const HARD_CAP_TOKENS = T_HARD_CAP_TOKENS;
 const DAY = 24 * 3600;
 
 let NOW, TOMORROW, DAY_AFTER_TOMORROW;
@@ -57,24 +57,24 @@ contract('Crowdsale', accounts => {
     });
 
     it('#2 check started', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         (await crowdsale.hasStarted()).should.be.equals(true);
     });
 
     it('#3 check not yet started', async () => {
-        const crowdsale = await Crowdsale.new(TOMORROW, DAY_AFTER_TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(TOMORROW, DAY_AFTER_TOMORROW);
         (await crowdsale.hasStarted()).should.be.equals(false);
     });
 
     it('#4 check already finished', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         await increaseTime(2 * DAY);
         (await crowdsale.hasStarted()).should.be.equals(true);
         (await crowdsale.hasEnded()).should.be.equals(true);
     });
 
     it('#5 check simple buy token', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         await increaseTime(DAY / 2);
         const ETH = web3.toWei(1, 'ether');
         const TOKENS = ETH * RATE;
@@ -88,7 +88,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#6 check hard cap', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
 
         const eth = web3.toWei(Math.floor(HARD_CAP_TOKENS / RATE));
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
@@ -103,7 +103,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#7 check finish crowdsale after time', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
         // send some tokens
         await crowdsale.send(web3.toWei(1, 'ether'));
@@ -126,7 +126,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#8 check that tokens are locked', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
 
         await crowdsale.send(web3.toWei(1, 'ether'));
@@ -141,7 +141,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#9 check finish crowdsale because hardcap', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
 
         // reach hard cap
@@ -154,7 +154,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#10 check that excluded can transfer', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW, SOFT_CAP_TOKENS, HARD_CAP_TOKENS);
+        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
 
         // buy some

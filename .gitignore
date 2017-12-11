@@ -2,3 +2,5 @@
 .idea
 build
 node_modules
+contracts/MyWishConsts.sol
+test/myWishCrowdsale.js

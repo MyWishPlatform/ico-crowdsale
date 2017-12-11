@@ -11,4 +11,7 @@ contract usingMyWishConsts {
     string constant TOKEN_SYMBOL = "WISH";
 
     address constant COLD_WALLET = 0x80826b5b717aDd3E840343364EC9d971FBa3955C;
+    uint constant SOFT_CAP_TOKENS = 1000000;
+    uint constant HARD_CAP_TOKENS = 22000000;
 }
+
