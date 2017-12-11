@@ -5,9 +5,9 @@
     "SOFT_CAP_TOKENS": 1000000,
     "HARD_CAP_TOKENS": 22000000,
     "RATE": 250,
-    "TOKEN_NAME": "MyWish Token",
-    "TOKEN_SYMBOL": "WISH",
-    "TOKEN_DECIMALS": 18,
+    "NAME": "MyWish Token",
+    "SYMBOL": "WISH",
+    "DECIMALS": 18,
     "COLD_WALLET": "0x80826b5b717aDd3E840343364EC9d971FBa3955C"
   }
 }

@@ -8,12 +8,11 @@ const {web3async} = require('./web3Utils');
 const Crowdsale = artifacts.require("./MainCrowdsale.sol");
 const Token = artifacts.require("./MainToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
-const SOFT_CAP_TOKENS = 1000000;
-const HARD_CAP_TOKENS = 22000000;
 const RATE = 250;
-const DECIMALS = 18;
-const NAME = 'MyWish Token';
-const SYMBOL = 'WISH';
+const SOFT_CAP_TOKENS = 1000000;
+const SOFT_CAP_ETH = SOFT_CAP_TOKENS / RATE;
+const HARD_CAP_TOKENS = 22000000;
+const HARD_CAP_ETH = HARD_CAP_TOKENS / RATE;
 const COLD_WALLET = '0x80826b5b717aDd3E840343364EC9d971FBa3955C';
 
 const DAY = 24 * 3600;
@@ -32,12 +31,9 @@ const createCrowdsaleWithTime = (startTime, endTime) => {
     return Crowdsale.new(
         startTime,
         endTime,
-        SOFT_CAP_TOKENS,
-        HARD_CAP_TOKENS,
+        SOFT_CAP_ETH,
+        HARD_CAP_ETH,
         RATE,
-        DECIMALS,
-        NAME,
-        SYMBOL,
         COLD_WALLET
     );
 };
@@ -148,7 +144,7 @@ contract('Crowdsale', accounts => {
         const token = Token.at(await crowdsale.token());
 
         // reach hard cap
-        const eth = web3.toWei(Math.floor(HARD_CAP_TOKENS / RATE));
+        const eth = web3.toWei(HARD_CAP_ETH);
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
 
         // finalize

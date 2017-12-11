@@ -7,17 +7,9 @@ module.exports = function(deployer, network, accounts) {
     const softCap = 1000000;
     const hardCap = 22000000;
     const rate = 250;
-    const decimals = 18;
-    const tokenName = "MyWish Token";
-    const tokenSymbol = "WISH";
     const coldWallet = accounts[0];
 
-    deployer.deploy(
-        Token,
-        tokenName,
-        tokenSymbol,
-        decimals
-    );
+    deployer.deploy(Token);
 
     deployer.deploy(
         Crowdsale,
@@ -26,9 +18,6 @@ module.exports = function(deployer, network, accounts) {
         softCap,
         hardCap,
         rate,
-        decimals,
-        tokenName,
-        tokenSymbol,
         coldWallet
     );
 };
