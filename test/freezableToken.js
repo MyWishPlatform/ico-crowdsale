@@ -33,7 +33,6 @@ contract('Token', accounts => {
         const block = await utils.web3async(web3.eth, web3.eth.getBlock, 'latest');
         const blockTime = block.timestamp;
         initTime(blockTime);
-        console.info("move time to", blockTime);
     });
 
     afterEach(async () => {
@@ -48,13 +47,38 @@ contract('Token', accounts => {
     it('#2 mint and freeze', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        const freezing = await token.getFreezing(BUYER_1, 0);
+        String(freezing[0]).should.be.equals(String(NOW + HOUR));
+        String(freezing[1]).should.be.equals(String(web3.toWei(1, 'ether')));
+    });
+
+    it('#3 mint, freeze and release', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
         await increaseTime(HOUR + 1);
         await token.releaseOnce({from: BUYER_1});
     });
 
-    it('#3 dot not release before date', async () => {
+    it('#4 dot not release before date', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
         await token.releaseOnce({from: BUYER_1}).should.eventually.be.rejected;
+    });
+
+    it('#5 mint, freeze and release all', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await increaseTime(HOUR + 1);
+        await token.releaseAll({from: BUYER_1});
+    });
+
+    it('#6 multi freeze', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        await increaseTime(HOUR * 3 + 1);
+        await token.releaseAll({from: BUYER_1});
     });
 });

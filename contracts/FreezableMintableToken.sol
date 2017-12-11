@@ -18,5 +18,6 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
         mint(address(keccak256(currentKey)), _amount);
 
         freeze(_to, _until);
+        Freezed(_to, _until, _amount);
     }
 }

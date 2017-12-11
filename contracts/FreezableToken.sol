@@ -9,6 +9,9 @@ contract FreezableToken is StandardToken {
 
     mapping (bytes32 => uint64) internal chains;
 
+    event Freezed(address indexed to, uint64 release, uint amount);
+    event Released(address indexed owner, uint amount);
+
     /**
      * @dev gets summary information about all freeze tokens for the specified address.
      * @param _addr Address of freeze tokens owner.
@@ -52,6 +55,7 @@ contract FreezableToken is StandardToken {
         transfer(address(keccak256(currentKey)), _amount);
 
         freeze(_to, _until);
+        Freezed(_to, _until, _amount);
     }
 
     /**
@@ -77,6 +81,7 @@ contract FreezableToken is StandardToken {
         else {
             roots[msg.sender] = next;
         }
+        Released(msg.sender, amount);
     }
 
     /**
@@ -87,7 +92,7 @@ contract FreezableToken is StandardToken {
         uint release;
         uint balance;
         (release, balance) = getFreezing(msg.sender, 0);
-        while (release < block.timestamp) {
+        while (release != 0 && block.timestamp > release) {
             releaseOnce();
             tokens += balance;
             (release, balance) = getFreezing(msg.sender, 0);
