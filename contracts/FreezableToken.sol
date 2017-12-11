@@ -41,50 +41,17 @@ contract FreezableToken is StandardToken {
 
     /**
      * @dev freeze your tokens to the specified address.
-     *      Be careful, gus usage is not deterministic,
-     *      and depends on how many freezes this address already has.
+     *      Be careful, gas usage is not deterministic,
+     *      and depends on how many freezes _to address already has.
      * @param _to Address to which token will be freeze.
      * @param _amount Amount of token to freeze.
      * @param _until Release date, must be in future.
      */
     function freezeTo(address _to, uint _amount, uint64 _until) public {
-        require(_until > block.timestamp);
         bytes32 currentKey = toKey(_to, _until);
         transfer(address(sha3(currentKey)), _amount);
 
-        uint64 head = roots[_to];
-
-        if (head == 0) {
-            roots[_to] = _until;
-            return;
-        }
-
-        bytes32 headKey = toKey(_to, head);
-        uint parent;
-        bytes32 parentKey;
-
-        while (head != 0 && _until > head) {
-            parent = head;
-            parentKey = headKey;
-
-            head = chains[headKey];
-            headKey = toKey(_to, head);
-        }
-
-        if (_until == head) {
-            return;
-        }
-
-        if (head != 0) {
-            chains[currentKey] = head;
-        }
-
-        if (parent == 0) {
-            roots[_to] = _until;
-        }
-        else {
-            chains[parentKey] = _until;
-        }
+        freeze(_to, _until);
     }
 
     /**
@@ -133,6 +100,44 @@ contract FreezableToken is StandardToken {
         assembly {
             result := or(result, mul(_addr, 0x10000000000000000))
             result := or(result, _release)
+        }
+    }
+
+    function freeze(address _to, uint64 _until) internal {
+        require(_until > block.timestamp);
+
+        uint64 head = roots[_to];
+
+        if (head == 0) {
+            roots[_to] = _until;
+            return;
+        }
+
+        bytes32 headKey = toKey(_to, head);
+        uint parent;
+        bytes32 parentKey;
+
+        while (head != 0 && _until > head) {
+            parent = head;
+            parentKey = headKey;
+
+            head = chains[headKey];
+            headKey = toKey(_to, head);
+        }
+
+        if (_until == head) {
+            return;
+        }
+
+        if (head != 0) {
+            chains[currentKey] = head;
+        }
+
+        if (parent == 0) {
+            roots[_to] = _until;
+        }
+        else {
+            chains[parentKey] = _until;
         }
     }
 }
