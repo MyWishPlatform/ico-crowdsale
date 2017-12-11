@@ -20,7 +20,7 @@ const initTime = (now) => {
 
 initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
-contract('Token', accounts => {
+contract('Token', account => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
@@ -33,6 +33,7 @@ contract('Token', accounts => {
         const block = await utils.web3async(web3.eth, web3.eth.getBlock, 'latest');
         const blockTime = block.timestamp;
         initTime(blockTime);
+        console.info("move time to", blockTime);
     });
 
     afterEach(async () => {
@@ -44,9 +45,17 @@ contract('Token', accounts => {
         token.address.should.have.length(42);
     });
 
-    it('#1 mint and freeze', async () => {
+    it('#2 mint and freeze', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
         await increaseTime(HOUR);
+        await token.releaseOnce({from: BUYER_1});
+    });
+
+    it('#3 dot not release before date', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await increaseTime(HOUR);
+        token.releaseOnce({from: BUYER_1}).should.eventually.be.rejected;
     });
 });
