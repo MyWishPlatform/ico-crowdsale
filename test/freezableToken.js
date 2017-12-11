@@ -20,7 +20,7 @@ const initTime = (now) => {
 
 initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
-contract('Token', account => {
+contract('Token', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
