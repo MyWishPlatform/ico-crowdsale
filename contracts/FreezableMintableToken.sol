@@ -13,9 +13,9 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
      * @param _amount Amount of token to mint and freeze.
      * @param _until Release date, must be in future.
      */
-    function mintAndFreeze(address _to, uint _amount, uint _until) public onlyOwner {
+    function mintAndFreeze(address _to, uint _amount, uint64 _until) public onlyOwner {
         bytes32 currentKey = toKey(_to, _until);
-        mint(address(sha3(currentKey)), _amount);
+        mint(address(keccak256(currentKey)), _amount);
 
         freeze(_to, _until);
     }

@@ -19,7 +19,7 @@ contract FreezableToken is StandardToken {
         uint64 release = roots[_addr];
         while (release != 0) {
             count ++;
-            total += balanceOf(address(sha3(toKey(_addr, release))));
+            total += balanceOf(address(keccak256(toKey(_addr, release))));
             release = chains[toKey(_addr, release)];
         }
 
@@ -36,7 +36,7 @@ contract FreezableToken is StandardToken {
         for (uint i = 0; i < _index; i ++) {
             release = chains[toKey(_addr, release)];
         }
-        return (release, balanceOf(address(sha3(toKey(_addr, release)))));
+        return (release, balanceOf(address(keccak256(toKey(_addr, release)))));
     }
 
     /**
@@ -49,7 +49,7 @@ contract FreezableToken is StandardToken {
      */
     function freezeTo(address _to, uint _amount, uint64 _until) public {
         bytes32 currentKey = toKey(_to, _until);
-        transfer(address(sha3(currentKey)), _amount);
+        transfer(address(keccak256(currentKey)), _amount);
 
         freeze(_to, _until);
     }
@@ -65,7 +65,7 @@ contract FreezableToken is StandardToken {
 
         uint64 next = chains[currentKey];
 
-        address currentAddress = address(sha3(currentKey));
+        address currentAddress = address(keccak256(currentKey));
         uint amount = balances[currentAddress];
         delete balances[currentAddress];
 
@@ -105,7 +105,6 @@ contract FreezableToken is StandardToken {
 
     function freeze(address _to, uint64 _until) internal {
         require(_until > block.timestamp);
-
         uint64 head = roots[_to];
 
         if (head == 0) {
@@ -130,7 +129,7 @@ contract FreezableToken is StandardToken {
         }
 
         if (head != 0) {
-            chains[currentKey] = head;
+            chains[toKey(_to, _until)] = head;
         }
 
         if (parent == 0) {
