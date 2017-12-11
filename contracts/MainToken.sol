@@ -4,9 +4,10 @@ import "zeppelin-solidity/contracts/token/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/BurnableToken.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "zeppelin-solidity/contracts/token/TokenTimelock.sol";
+import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 
-contract MainToken is usingConsts, MintableToken, BurnableToken, Pausable {
+contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable {
     /**
      * @dev Accounts who can transfer token even if paused. Works only during crowdsale.
      */
