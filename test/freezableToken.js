@@ -48,14 +48,13 @@ contract('Token', accounts => {
     it('#2 mint and freeze', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
-        await increaseTime(HOUR);
+        await increaseTime(HOUR + 1);
         await token.releaseOnce({from: BUYER_1});
     });
 
     it('#3 dot not release before date', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
-        await increaseTime(HOUR);
-        token.releaseOnce({from: BUYER_1}).should.eventually.be.rejected;
+        await token.releaseOnce({from: BUYER_1}).should.eventually.be.rejected;
     });
 });
