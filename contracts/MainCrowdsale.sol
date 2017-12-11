@@ -29,22 +29,16 @@ contract MainCrowdsale is usingConsts, RefundableCrowdsale, CappedCrowdsale {
         return new MainToken();
     }
 
-    function addExcluded(address _toExclude) onlyOwner {
-        MainToken(token).addExcluded(_toExclude);
-    }
-
-    // Send ether to the fund collection wallet
-    function forwardFunds(uint amountWei) internal {
-        wallet.transfer(amountWei);
-    }
-
     function hasStarted() public constant returns (bool) {
         return now >= startTime;
     }
 
     function finalization() internal {
         super.finalization();
-        MainToken(token).crowdsaleFinished();
+        //#ifdef PAUSED
+        MainToken(token).unpause();
+        //#endif PAUSED
+        MainToken(token).finishMinting();
         token.transferOwnership(owner);
     }
 }

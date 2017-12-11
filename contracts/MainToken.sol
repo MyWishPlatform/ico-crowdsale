@@ -8,11 +8,6 @@ import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 
 contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable {
-    /**
-     * @dev Accounts who can transfer token even if paused. Works only during crowdsale.
-     */
-    mapping(address => bool) excluded;
-
     function MainToken() {
         pause();
     }
@@ -29,22 +24,13 @@ contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausab
         return TOKEN_DECIMALS_UINT8;
     }
 
-    function crowdsaleFinished() onlyOwner {
-        paused = false;
-        finishMinting();
-    }
-
-    function addExcluded(address _toExclude) onlyOwner {
-        excluded[_toExclude] = true;
-    }
-
     function transferFrom(address _from, address _to, uint256 _value) returns (bool _success) {
-        require(!paused || excluded[_from]);
+        require(!paused);
         return super.transferFrom(_from, _to, _value);
     }
 
     function transfer(address _to, uint256 _value) returns (bool _success) {
-        require(!paused || excluded[msg.sender]);
+        require(!paused);
         return super.transfer(_to, _value);
     }
 }
