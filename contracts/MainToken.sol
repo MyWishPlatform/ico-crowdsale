@@ -1,31 +1,42 @@
 pragma solidity ^0.4.0;
 
-import "./MyWishConsts.sol";
 import "zeppelin-solidity/contracts/token/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/BurnableToken.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "zeppelin-solidity/contracts/token/TokenTimelock.sol";
 
-contract MyWishToken is usingMyWishConsts, MintableToken, BurnableToken, Pausable {
+contract MainToken is MintableToken, BurnableToken, Pausable {
     /**
      * @dev Accounts who can transfer token even if paused. Works only during crowdsale.
      */
     mapping(address => bool) excluded;
 
-    function MyWishToken() {
+    string public token_name;
+    string public token_symbol;
+    uint8 public token_decimals;
+
+    function MainToken(
+        string _token_name,
+        string _token_symbol,
+        uint _token_decimals
+    ) {
+        token_name = _token_name;
+        token_symbol = _token_symbol;
+        token_decimals = uint8(_token_decimals);
+
         pause();
     }
 
     function name() constant public returns (string _name) {
-        return TOKEN_NAME;
+        return token_name;
     }
 
     function symbol() constant public returns (string _symbol) {
-        return TOKEN_SYMBOL;
+        return token_symbol;
     }
 
     function decimals() constant public returns (uint8 _decimals) {
-        return TOKEN_DECIMALS_UINT8;
+        return token_decimals;
     }
 
     function crowdsaleFinished() onlyOwner {

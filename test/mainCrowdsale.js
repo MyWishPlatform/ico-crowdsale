@@ -5,12 +5,17 @@ chai.should();
 const {increaseTime, revert, snapshot} = require('./evmMethods');
 const {web3async} = require('./web3Utils');
 
-const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
-const Token = artifacts.require("./MyWishToken.sol");
+const Crowdsale = artifacts.require("./MainCrowdsale.sol");
+const Token = artifacts.require("./MainToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
+const SOFT_CAP_TOKENS = 1000000;
+const HARD_CAP_TOKENS = 22000000;
+const RATE = 250;
+const DECIMALS = 18;
+const NAME = 'MyWish Token';
+const SYMBOL = 'WISH';
+const COLD_WALLET = '0x80826b5b717aDd3E840343364EC9d971FBa3955C';
 
-const SOFT_CAP_TOKENS = T_SOFT_CAP_TOKENS;
-const HARD_CAP_TOKENS = T_HARD_CAP_TOKENS;
 const DAY = 24 * 3600;
 
 let NOW, TOMORROW, DAY_AFTER_TOMORROW;
@@ -23,12 +28,25 @@ const initTime = (now) => {
 
 initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
+const createCrowdsaleWithTime = (startTime, endTime) => {
+    return Crowdsale.new(
+        startTime,
+        endTime,
+        SOFT_CAP_TOKENS,
+        HARD_CAP_TOKENS,
+        RATE,
+        DECIMALS,
+        NAME,
+        SYMBOL,
+        COLD_WALLET
+    );
+};
+
 contract('Crowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
     const RICH_MAN = accounts[3];
-    const RATE = 250;
 
     let snapshotId;
 
@@ -57,24 +75,24 @@ contract('Crowdsale', accounts => {
     });
 
     it('#2 check started', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         (await crowdsale.hasStarted()).should.be.equals(true);
     });
 
     it('#3 check not yet started', async () => {
-        const crowdsale = await Crowdsale.new(TOMORROW, DAY_AFTER_TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(TOMORROW, DAY_AFTER_TOMORROW);
         (await crowdsale.hasStarted()).should.be.equals(false);
     });
 
     it('#4 check already finished', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         await increaseTime(2 * DAY);
         (await crowdsale.hasStarted()).should.be.equals(true);
         (await crowdsale.hasEnded()).should.be.equals(true);
     });
 
     it('#5 check simple buy token', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         await increaseTime(DAY / 2);
         const ETH = web3.toWei(1, 'ether');
         const TOKENS = ETH * RATE;
@@ -88,60 +106,45 @@ contract('Crowdsale', accounts => {
     });
 
     it('#6 check hard cap', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
 
         const eth = web3.toWei(Math.floor(HARD_CAP_TOKENS / RATE));
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
 
         const moreOne = web3.toWei(1, 'ether');
-        try {
-            await crowdsale.sendTransaction({from: BUYER_1, value: moreOne});
-        } catch (error) {
-            return;
-        }
-        assert.fail(true, false, 'Transaction must be failed because of hardcap.');
+        await crowdsale.sendTransaction({from: BUYER_1, value: moreOne}).should.eventually.be.rejected;
     });
 
     it('#7 check finish crowdsale after time', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
         // send some tokens
         await crowdsale.send(web3.toWei(1, 'ether'));
-        try {
-            // try to finalize before the END
-            await crowdsale.finalize();
-        }
-        catch (error) {
-            await increaseTime(DAY + 120);
-            // finalize after the END time
-            await crowdsale.finalize();
-            // try to transfer some tokens (it should work now)
-            const tokens = web3.toWei(100, 'ether');
-            await token.transfer(BUYER_1, tokens);
-            (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
-            (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
-            return;
-        }
-        assert.fail(true, false, 'Finalize should not work before ended.');
+
+        // try to finalize before the END
+        await crowdsale.finalize().should.eventually.be.rejected;
+
+        await increaseTime(DAY + 120);
+        // finalize after the END time
+        await crowdsale.finalize();
+        // try to transfer some tokens (it should work now)
+        const tokens = web3.toWei(100, 'ether');
+        await token.transfer(BUYER_1, tokens);
+        (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
+        (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
     });
 
     it('#8 check that tokens are locked', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
 
         await crowdsale.send(web3.toWei(1, 'ether'));
 
-        try {
-            await token.transfer(BUYER_1, web3.toWei(100, 'ether'));
-        }
-        catch (error) {
-            return;
-        }
-        assert.fail(true, false, 'Token transfer must be locked.');
+        await token.transfer(BUYER_1, web3.toWei(100, 'ether')).should.eventually.be.rejected;
     });
 
     it('#9 check finish crowdsale because hardcap', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
 
         // reach hard cap
@@ -154,7 +157,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#10 check that excluded can transfer', async () => {
-        const crowdsale = await Crowdsale.new(NOW, TOMORROW);
+        const crowdsale = await createCrowdsaleWithTime(NOW, TOMORROW);
         const token = Token.at(await crowdsale.token());
 
         // buy some

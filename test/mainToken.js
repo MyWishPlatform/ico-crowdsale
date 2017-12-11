@@ -5,9 +5,12 @@ chai.should();
 const {increaseTime, revert, snapshot} = require('./evmMethods');
 const utils = require('./web3Utils');
 
-const Crowdsale = artifacts.require("./MyWishCrowdsale.sol");
-const Token = artifacts.require("./MyWishToken.sol");
+const Token = artifacts.require("./MainToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
+
+const DECIMALS = 18;
+const NAME = 'MyWish Token';
+const SYMBOL = 'WISH';
 
 const DAY = 24 * 3600;
 
@@ -19,9 +22,15 @@ const initTime = (now) => {
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
 
+const createToken = () => Token.new(
+    NAME,
+    SYMBOL,
+    DECIMALS
+);
+
 initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
-contract('Crowdsale', accounts => {
+contract('Token', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
@@ -46,7 +55,7 @@ contract('Crowdsale', accounts => {
     });
 
     it('#2 minting', async () => {
-        const token = await Token.deployed();
+        const token = await createToken();
 
         const tokensToMint = web3.toWei(1, 'ether');
         await token.mint(BUYER_1, tokensToMint);
@@ -55,30 +64,20 @@ contract('Crowdsale', accounts => {
     });
 
     it('#3 minting after it finished', async () => {
-        const token = await Token.deployed();
+        const token = await createToken();
 
         const tokensToMint = web3.toWei(1, 'ether');
 
         await token.finishMinting();
-        try {
-            await token.mint(BUYER_1, tokensToMint);
-        } catch (error) {
-            return;
-        }
-        assert.fail(true, false, 'Transaction must be failed because minting is finished.');
+        await token.mint(BUYER_1, tokensToMint).should.eventually.be.rejected;
     });
 
     it('#4 burn', async () => {
-        const token = await Token.deployed();
+        const token = await createToken();
 
         const tokensToMint = web3.toWei(1, 'ether');
         await token.mint(OWNER, tokensToMint);
-        try {
-            tokensToMint.burn(tokensToMint + 1);
-        } catch (error) {
-            token.burn(tokensToMint / 2);
-            return;
-        }
-        assert.fail(true, false, 'Transaction must be failed because it tries to burn more tokens than there is.');
+        await token.burn(tokensToMint + 1).should.eventually.be.rejected;
+        await token.burn(tokensToMint / 2);
     });
 });
