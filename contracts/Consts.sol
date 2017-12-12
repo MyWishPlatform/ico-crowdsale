@@ -7,5 +7,6 @@ contract usingConsts {
 
     string constant TOKEN_NAME = "MyWish Token";
     string constant TOKEN_SYMBOL = "WISH";
+    bool constant PAUSED = true;
 }
 
