@@ -15,14 +15,14 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     //#endif
 {
 
-    function TemplateCrowdsale()
+    function TemplateCrowdsale(MintableToken _token)
         Crowdsale(D_START_TIME, D_END_TIME, D_RATE, D_COLD_WALLET)
         CappedCrowdsale(D_HARD_CAP_ETH * TOKEN_DECIMAL_MULTIPLIER)
         //#if D_SOFT_CAP_ETH != 0
         RefundableCrowdsale(D_SOFT_CAP_ETH * TOKEN_DECIMAL_MULTIPLIER)
         //#endif
     {
-        transferOwnership(D_COLD_WALLET);
+        token = _token;
     }
 
     //#if "D_TOKENS_ADDRESS_1" != ""
@@ -42,8 +42,17 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         //#elif "D_TOKENS_ADDRESS_3" != "" && D_TOKENS_FREEZE_3 != 0
         FreezableMintableToken(token).mintAndFreeze(D_TOKENS_ADDRESS_3, D_TOKENS_AMOUNT_3, D_TOKENS_FREEZE_3);
         //#endif
+
+        transferOwnership(D_COLD_WALLET);
     }
     //#endif
+
+    /**
+     * @dev override token creation to set token address in constructor.
+     */
+    function createTokenContract() internal returns (MintableToken) {
+        return 0;
+    }
 
     //#if "D_AUTO_FINALISE" != "false"
     /**
