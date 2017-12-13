@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 rm -rf build
 source preprocess.sh
-truffle compile
+node node_modules/truffle/build/cli.bundled.js compile
