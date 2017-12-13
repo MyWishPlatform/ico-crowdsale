@@ -14,7 +14,7 @@
  
    // Convert from hex.
    snapshot_id = utils.bufferToInt(snapshot_id);
-+  var timeAdjustment = this.snapshots[snapshot_id].timeAdjustmen
++  var timeAdjustment = this.snapshots[snapshot_id].timeAdjustment;
  
    this.logger.log("Reverting to snapshot #" + snapshot_id);
  
