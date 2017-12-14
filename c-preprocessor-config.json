@@ -1,7 +1,7 @@
 {
   "constants": {
-    "D_START_TIME": 1539363600,
-    "D_END_TIME": 1539709200,
+    "D_START_TIME": 1507838400,
+    "D_END_TIME": 1508184000,
     "D_SOFT_CAP_ETH": 1000000,
     "D_HARD_CAP_ETH": 22000000,
     "D_RATE": 250,
