@@ -4,6 +4,7 @@ import "zeppelin-solidity/contracts/crowdsale/CappedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/RefundableCrowdsale.sol";
 import "./MainCrowdsale.sol";
 import "./Checkable.sol";
+import "./BonusableCrowdsale.sol";
 
 contract TemplateCrowdsale is usingConsts, MainCrowdsale
     //#if D_SOFT_CAP_ETH != 0
@@ -12,6 +13,9 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     , CappedCrowdsale
     //#if "D_AUTO_FINALISE" != "false"
     , Checkable
+    //#endif
+    //#if "D_BONUS_TOKENS" != "false"
+    , BonusableCrowdsale
     //#endif
 {
 
