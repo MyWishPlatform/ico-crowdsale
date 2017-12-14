@@ -48,20 +48,12 @@ contract('TemplateCrowdsale', accounts => {
         return new Date(latestBlock.timestamp * 1000);
     };
 
-    before(async () => {
+    beforeEach(async () => {
         snapshotId = (await snapshot()).result;
-        // const block = await web3async(web3.eth, web3.eth.getBlock, 'latest');
-        // const blockTime = block.timestamp;
-        // initTime(blockTime);
-        // console.info("Before: " + await getBlockchainTime());
-        // console.log(snapshotId)
-        console.info("Snapshot: " + snapshotId);
     });
 
     afterEach(async () => {
-        // await revert(snapshotId);
-        console.info("Move to: " + snapshotId);
-        // console.info("After: " + await getBlockchainTime());
+        await revert(snapshotId);
     });
 
     it('#0 balances', () => {
@@ -72,14 +64,16 @@ contract('TemplateCrowdsale', accounts => {
         });
     });
 
+    it('#1/2 failing construct', async () => {
+        try {
+            await createCrowdsale();
+        } catch (ignored) {
+        }
+    });
+
     it('#1 construct', async () => {
-        const balance = await web3async(web3.eth, web3.eth.getBalance, OWNER);
-        const etherBalance = web3.fromWei(balance, "ether");
-        console.info(`Account (${OWNER}) balance is ${etherBalance}`);
-        const token = await Token.new();
-         await Crowdsale.new(token.address);
-        // const crowdsale = await createCrowdsale();
-        // (await crowdsale.token()).should.have.length(42);
+        const crowdsale = await createCrowdsale();
+        (await crowdsale.token()).should.have.length(42);
     });
 
     it('#2 check started', async () => {
@@ -113,5 +107,90 @@ contract('TemplateCrowdsale', accounts => {
             hasStarted.should.be.equals(true);
             hasEnded.should.be.equals(true);
         }
+    });
+
+    it('#4 check simple buy token', async () => {
+        const crowdsale = await createCrowdsale();
+        console.log(1);
+        if (NOW <= START_TIME) {
+            console.log(2);
+            await increaseTime(START_TIME - NOW);
+            console.log(3);
+        }
+        console.log("Started: " + await crowdsale.hasStarted());
+        console.log("Ended: " + await crowdsale.hasEnded());
+        const ETH = web3.toWei(1, 'ether');
+        const TOKENS = ETH * RATE;
+        await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
+        const token = Token.at(await crowdsale.token());
+        (await token.balanceOf(BUYER_1)).toString().should.be.equals(TOKENS.toString());
+
+        const vault = RefundVault.at(await crowdsale.vault());
+        const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
+        vaultBalance.toString().should.be.equals(ETH.toString(), 'money should be on vault');
+    });
+
+    it('#5 check hard cap', async () => {
+        const crowdsale = await createCrowdsale();
+        if (NOW <= START_TIME) {
+            await increaseTime(START_TIME - NOW);
+        }
+
+        const eth = web3.toWei(HARD_CAP_TOKENS, "ether");
+        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+
+        const moreOne = web3.toWei(1, 'ether');
+        await crowdsale.sendTransaction({from: BUYER_1, value: moreOne}).should.eventually.be.rejected;
+    });
+
+    it('#7 check finish crowdsale after time', async () => {
+        const crowdsale = await createCrowdsale();
+        const token = Token.at(await crowdsale.token());
+        if (NOW <= START_TIME) {
+            await increaseTime(START_TIME - NOW);
+        }
+
+        // send some tokens
+        await crowdsale.send(web3.toWei(1, 'ether'));
+
+        // try to finalize before the END
+        await crowdsale.finalize().should.eventually.be.rejected;
+
+        await increaseTime(END_TIME - START_TIME + 1);
+        // finalize after the END time
+        await crowdsale.finalize();
+        // try to transfer some tokens (it should work now)
+        const tokens = web3.toWei(100, 'ether');
+        await token.transfer(BUYER_1, tokens);
+        (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
+        (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
+    });
+
+    it('#8 check that tokens are locked', async () => {
+        const crowdsale = await createCrowdsale();
+        const token = Token.at(await crowdsale.token());
+        if (NOW <= START_TIME) {
+            await increaseTime(START_TIME - NOW);
+        }
+
+        await crowdsale.send(web3.toWei(1, 'ether'));
+
+        await token.transfer(BUYER_1, web3.toWei(100, 'ether')).should.eventually.be.rejected;
+    });
+
+    it('#9 check finish crowdsale because hardcap', async () => {
+        const crowdsale = await createCrowdsale();
+        const token = Token.at(await crowdsale.token());
+        if (NOW <= START_TIME) {
+            await increaseTime(START_TIME - NOW);
+        }
+
+        // reach hard cap
+        const eth = web3.toWei(HARD_CAP_ETH);
+        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+
+        // finalize
+        await crowdsale.finalize();
+        (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
     });
 });
