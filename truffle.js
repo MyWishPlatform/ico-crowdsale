@@ -1,5 +1,6 @@
-const ganache = require("ganache-cli");
 const ether = '0000000000000000000';
+const ganache = require("ganache-cli");
+require('./utils/revertTime.js');
 
 module.exports = {
     networks: {
@@ -10,8 +11,8 @@ module.exports = {
                     return {balance: "" + v + ether};
                 }),
                 time: new Date("2017-10-10T15:00:00Z"),
-                debug: false,
-                // logger: console
+                debug: false
+                // ,logger: console
             })
         },
         localhost: {

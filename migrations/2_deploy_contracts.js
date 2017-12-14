@@ -1,5 +1,5 @@
 const Token = artifacts.require("./MainToken.sol");
-const Crowdsale = artifacts.require("./MainCrowdsale.sol");
+const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 
 module.exports = function(deployer, network, accounts) {
     const startTime = Math.round(new Date("2017-10-10T15:00:00Z").getTime() / 1000) + 5;
@@ -9,15 +9,9 @@ module.exports = function(deployer, network, accounts) {
     const rate = 250;
     const coldWallet = accounts[0];
 
-    deployer.deploy(Token);
+    deployer.deploy(Token)
+        .then(function () {
+            deployer.deploy(Token.address);
+        });
 
-    deployer.deploy(
-        Crowdsale,
-        startTime,
-        endTime,
-        softCap,
-        hardCap,
-        rate,
-        coldWallet
-    );
 };
