@@ -17,12 +17,13 @@ module.exports = {
     increaseTime: addSeconds => {
         return new Promise((resolve, reject) => {
             web3.currentProvider.sendAsync(
-                {jsonrpc: "2.0", method: "evm_increaseTime", params: [addSeconds], id: 0},
+                [{jsonrpc: "2.0", method: "evm_increaseTime", params: [addSeconds], id: 0},
+                    {jsonrpc: "2.0", method: "evm_mine", params: [], id: 0}],
                 function (error, result) {
                     if (error) {
                         reject(error);
                     } else {
-                        mineBlock().then(() => resolve(result));
+                        resolve(result);
                     }
                 }
             );
@@ -36,7 +37,7 @@ module.exports = {
                     if (error) {
                         reject(error);
                     } else {
-                        mineBlock().then(() => resolve(result));
+                        resolve(result);
                     }
                 }
             );
@@ -55,5 +56,6 @@ module.exports = {
                 }
             );
         });
-    }
+    },
+    mine: mineBlock
 };

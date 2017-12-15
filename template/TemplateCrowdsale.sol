@@ -14,6 +14,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     , Checkable
     //#endif
 {
+    bool public initialized = false;
 
     function TemplateCrowdsale(MintableToken _token)
         Crowdsale(D_START_TIME, D_END_TIME, D_RATE, D_COLD_WALLET)
@@ -26,7 +27,9 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     }
 
     //#if "D_TOKENS_ADDRESS_1" != ""
-    function init() onlyOwner public {
+    function init() public onlyOwner {
+        require(!initialized);
+        initialized = true;
         //#if "D_TOKENS_ADDRESS_1" != "" && D_TOKENS_FREEZE_1 == 0
         token.mint(D_TOKENS_ADDRESS_1, D_TOKENS_AMOUNT_1);
         //#elif "D_TOKENS_ADDRESS_1" != "" && D_TOKENS_FREEZE_1 != 0

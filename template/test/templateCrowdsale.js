@@ -2,7 +2,7 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
-const {increaseTime, revert, snapshot} = require('./evmMethods');
+const {increaseTime, revert, snapshot, mine} = require('./evmMethods');
 const {web3async} = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
@@ -27,10 +27,10 @@ const initTime = (now) => {
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
 
-initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
+// initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
 
-contract('TemplateCrowdsale', accounts => {
+contract('TemplateCrowdsale', async(accounts) => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
@@ -40,7 +40,9 @@ contract('TemplateCrowdsale', accounts => {
 
     const createCrowdsale = async () => {
         const token = await Token.new();
-        return await Crowdsale.new(token.address);
+        const crowdsale = await Crowdsale.new(token.address);
+        await token.transferOwnership(crowdsale.address);
+        return crowdsale;
     };
 
     const getBlockchainTime = async () => {
@@ -50,13 +52,16 @@ contract('TemplateCrowdsale', accounts => {
 
     beforeEach(async () => {
         snapshotId = (await snapshot()).result;
+        const latestBlock = await web3async(web3.eth, web3.eth.getBlock, 'latest');
+        initTime(latestBlock.timestamp);
+        console.info("Now is", NOW);
     });
 
     afterEach(async () => {
         await revert(snapshotId);
     });
 
-    it('#0 balances', () => {
+    it('#0 balances', async () => {
         accounts.forEach(async (account, index) => {
             const balance = await web3async(web3.eth, web3.eth.getBalance, account);
             const etherBalance = web3.fromWei(balance, "ether");
@@ -64,30 +69,20 @@ contract('TemplateCrowdsale', accounts => {
         });
     });
 
-    it('#1/2 failing construct', async () => {
-        try {
-            await createCrowdsale();
-        } catch (ignored) {
-        }
-    });
-
     it('#1 construct', async () => {
         const crowdsale = await createCrowdsale();
-        (await crowdsale.token()).should.have.length(42);
+        await crowdsale.token().then(console.info);
+        await crowdsale.token().should.eventually.have.length(42);
     });
 
     it('#2 check started', async () => {
         const crowdsale = await createCrowdsale();
         let hasStarted = await crowdsale.hasStarted();
-        if (NOW >= START_TIME) {
-            hasStarted.should.be.equals(true);
-        } else {
-            hasStarted.should.be.equals(false);
+        hasStarted.should.be.equals(false, "crowdsale should be not started yet.");
 
-            await increaseTime(START_TIME - NOW);
-            hasStarted = await crowdsale.hasStarted();
-            hasStarted.should.be.equals(true);
-        }
+        await increaseTime(START_TIME - NOW + 10);
+        hasStarted = await crowdsale.hasStarted();
+        hasStarted.should.be.equals(true, "crowdsale should be started after timeshift.");
     });
 
     it('#3 check finished', async () => {
@@ -95,32 +90,26 @@ contract('TemplateCrowdsale', accounts => {
         let hasStarted = await crowdsale.hasStarted();
         let hasEnded = await crowdsale.hasEnded();
 
-        if (NOW <= START_TIME) {
-            hasStarted.should.be.equals(false);
-            hasEnded.should.be.equals(false);
-        }
-        else if (START_TIME <= NOW && NOW <= END_TIME) {
-            hasStarted.should.be.equals(true);
-            hasEnded.should.be.equals(false);
-        }
-        else if (NOW >= END_TIME) {
-            hasStarted.should.be.equals(true);
-            hasEnded.should.be.equals(true);
-        }
+        hasStarted.should.be.equals(false, "hasStarted before timeshift");
+        hasEnded.should.be.equals(false, "hasEnded before timeshift");
+
+        await increaseTime(END_TIME - NOW + 10);
+
+        hasStarted = await crowdsale.hasStarted();
+        hasEnded = await crowdsale.hasEnded();
+
+        hasStarted.should.be.equals(true, "hasStarted after timeshift");
+        hasEnded.should.be.equals(true, "hasEnded after timeshift");
     });
 
     it('#4 check simple buy token', async () => {
         const crowdsale = await createCrowdsale();
-        console.log(1);
-        if (NOW <= START_TIME) {
-            console.log(2);
-            await increaseTime(START_TIME - NOW);
-            console.log(3);
-        }
+        await increaseTime(START_TIME - NOW + 10);
         console.log("Started: " + await crowdsale.hasStarted());
         console.log("Ended: " + await crowdsale.hasEnded());
         const ETH = web3.toWei(1, 'ether');
         const TOKENS = ETH * RATE;
+
         await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
         const token = Token.at(await crowdsale.token());
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(TOKENS.toString());
@@ -132,11 +121,9 @@ contract('TemplateCrowdsale', accounts => {
 
     it('#5 check hard cap', async () => {
         const crowdsale = await createCrowdsale();
-        if (NOW <= START_TIME) {
-            await increaseTime(START_TIME - NOW);
-        }
+        await increaseTime(START_TIME - NOW);
 
-        const eth = web3.toWei(HARD_CAP_TOKENS, "ether");
+        const eth = web3.toWei(HARD_CAP_ETH, "ether");
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
 
         const moreOne = web3.toWei(1, 'ether');
