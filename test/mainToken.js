@@ -6,7 +6,6 @@ const {increaseTime, revert, snapshot} = require('./evmMethods');
 const utils = require('./web3Utils');
 
 const Token = artifacts.require("./MainToken.sol");
-const RefundVault = artifacts.require("./RefundVault.sol");
 
 const DAY = 24 * 3600;
 
@@ -17,8 +16,6 @@ const initTime = (now) => {
     TOMORROW = now + DAY;
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
-
-initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
 
 contract('Token', accounts => {
     const OWNER = accounts[0];
