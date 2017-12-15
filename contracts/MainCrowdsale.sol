@@ -22,6 +22,6 @@ contract MainCrowdsale is usingConsts, FinalizableCrowdsale {
             MainToken(token).unpause();
         }
         token.finishMinting();
-        token.transferOwnership(owner);
+        token.transferOwnership(TARGET_USER);
     }
 }

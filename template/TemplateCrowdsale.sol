@@ -26,29 +26,27 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         token = _token;
     }
 
-    //#if "D_TOKENS_ADDRESS_1" != ""
     function init() public onlyOwner {
         require(!initialized);
         initialized = true;
-        //#if "D_TOKENS_ADDRESS_1" != "" && D_TOKENS_FREEZE_1 == 0
-        token.mint(D_TOKENS_ADDRESS_1, D_TOKENS_AMOUNT_1);
-        //#elif "D_TOKENS_ADDRESS_1" != "" && D_TOKENS_FREEZE_1 != 0
-        FreezableMintableToken(token).mintAndFreeze(D_TOKENS_ADDRESS_1, D_TOKENS_AMOUNT_1, D_TOKENS_FREEZE_1);
-        //#endif
-        //#if "D_TOKENS_ADDRESS_2" != "" && D_TOKENS_FREEZE_2 == 0
-        token.mint(D_TOKENS_ADDRESS_2, D_TOKENS_AMOUNT_2);
-        //#elif "D_TOKENS_ADDRESS_2" != "" && D_TOKENS_FREEZE_2 != 0
-        FreezableMintableToken(token).mintAndFreeze(D_TOKENS_ADDRESS_2, D_TOKENS_AMOUNT_2, D_TOKENS_FREEZE_2);
-        //#endif
-        //#if "D_TOKENS_ADDRESS_3" != "" && D_TOKENS_FREEZE_3 == 0
-        token.mint(D_TOKENS_ADDRESS_3, D_TOKENS_AMOUNT_3);
-        //#elif "D_TOKENS_ADDRESS_3" != "" && D_TOKENS_FREEZE_3 != 0
-        FreezableMintableToken(token).mintAndFreeze(D_TOKENS_ADDRESS_3, D_TOKENS_AMOUNT_3, D_TOKENS_FREEZE_3);
+
+        //#if D_PREMINT_COUNT > 0
+        address[D_PREMINT_COUNT] memory addresses = [D_PREMINT_ADDRESSES];
+        uint[D_PREMINT_COUNT] memory amounts = [D_PREMINT_AMOUNTS];
+        uint64[D_PREMINT_COUNT] memory freezes = [D_PREMINT_FREEZES];
+
+        for (uint i = 0; i < addresses.length; i ++) {
+            if (freezes[i] == 0) {
+                token.mint(addresses[i], amounts[i]);
+            }
+            else {
+                FreezableMintableToken(token).mintAndFreeze(addresses[i], amounts[i], freezes[i]);
+            }
+        }
         //#endif
 
         transferOwnership(D_COLD_WALLET);
     }
-    //#endif
 
     /**
      * @dev override token creation to set token address in constructor.

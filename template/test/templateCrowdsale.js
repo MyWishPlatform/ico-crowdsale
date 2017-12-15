@@ -13,7 +13,7 @@ const SOFT_CAP_TOKENS = D_HARD_CAP_ETH * RATE;
 const SOFT_CAP_ETH = D_SOFT_CAP_ETH;
 const HARD_CAP_TOKENS = D_HARD_CAP_ETH * RATE;
 const HARD_CAP_ETH = D_HARD_CAP_ETH;
-const COLD_WALLET = D_COLD_WALLET;
+const COLD_WALLET = "D_COLD_WALLET";
 const START_TIME = D_START_TIME;
 const END_TIME = D_END_TIME;
 
@@ -35,6 +35,7 @@ contract('TemplateCrowdsale', async(accounts) => {
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
     const RICH_MAN = accounts[3];
+    const TARGET_USER = accounts[4];
 
     let snapshotId;
 
@@ -42,12 +43,20 @@ contract('TemplateCrowdsale', async(accounts) => {
         const token = await Token.new();
         const crowdsale = await Crowdsale.new(token.address);
         await token.transferOwnership(crowdsale.address);
+        await crowdsale.init();
         return crowdsale;
     };
 
     const getBlockchainTime = async () => {
         const latestBlock = await web3async(web3.eth, web3.eth.getBlock, 'latest');
         return new Date(latestBlock.timestamp * 1000);
+    };
+
+    const dumpInfo = async (crowdsale) => {
+        console.log("Started: " + await crowdsale.hasStarted());
+        console.log("Ended: " + await crowdsale.hasEnded());
+        console.log("Finalized: " + await crowdsale.isFinalized());
+        console.log("Owner: " + await crowdsale.owner());
     };
 
     beforeEach(async () => {
@@ -67,6 +76,10 @@ contract('TemplateCrowdsale', async(accounts) => {
             const etherBalance = web3.fromWei(balance, "ether");
             console.info(`Account ${index} (${account}) balance is ${etherBalance}`)
         });
+    });
+
+    it('#0 3/4 precheck', async() => {
+        TARGET_USER.should.be.equals(COLD_WALLET, "it must be the same");
     });
 
     it('#1 construct', async () => {
@@ -133,32 +146,28 @@ contract('TemplateCrowdsale', async(accounts) => {
     it('#7 check finish crowdsale after time', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
-        if (NOW <= START_TIME) {
-            await increaseTime(START_TIME - NOW);
-        }
+        await increaseTime(START_TIME - NOW);
 
         // send some tokens
         await crowdsale.send(web3.toWei(1, 'ether'));
 
         // try to finalize before the END
-        await crowdsale.finalize().should.eventually.be.rejected;
+        await crowdsale.finalize({from: TARGET_USER}).should.eventually.be.rejected;
 
         await increaseTime(END_TIME - START_TIME + 1);
         // finalize after the END time
-        await crowdsale.finalize();
+        await crowdsale.finalize({from: TARGET_USER});
         // try to transfer some tokens (it should work now)
         const tokens = web3.toWei(100, 'ether');
         await token.transfer(BUYER_1, tokens);
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
-        (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
+        (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
     });
 
     it('#8 check that tokens are locked', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
-        if (NOW <= START_TIME) {
-            await increaseTime(START_TIME - NOW);
-        }
+        await increaseTime(START_TIME - NOW);
 
         await crowdsale.send(web3.toWei(1, 'ether'));
 
@@ -168,16 +177,14 @@ contract('TemplateCrowdsale', async(accounts) => {
     it('#9 check finish crowdsale because hardcap', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
-        if (NOW <= START_TIME) {
-            await increaseTime(START_TIME - NOW);
-        }
+        await increaseTime(START_TIME - NOW);
 
         // reach hard cap
         const eth = web3.toWei(HARD_CAP_ETH);
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
 
         // finalize
-        await crowdsale.finalize();
-        (await token.owner()).should.be.equals(OWNER, 'token owner must be OWNER, not crowdsale');
+        await crowdsale.finalize({from: TARGET_USER});
+        (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
     });
 });
