@@ -29,6 +29,7 @@ StateManager.prototype.revert = function (snapshot_id, callback) {
     this.logger.log("Reverting to snapshot #" + snapshot_id);
 
     if (snapshot_id > this.snapshots.length) {
+        callback(new Error("Wrong snapshot number, max is " + (this.snapshots.length - 1)), false);
         return false;
     }
 
