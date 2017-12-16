@@ -24,40 +24,33 @@ contract BonusableCrowdsale is Crowdsale {
     }
 
     function getBonusRate(uint256 weiAmount) internal returns (uint256) {
-        uint256 baseRate = this.rate;
+        uint256 baseRate = D_RATE;
         uint256 rate = baseRate;
 
+        //#if D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         // apply bonus for time & weiRaised
-        //#if defined(D_WEI_RAISED_BOUNDARY_1) && defined(D_TIME_BOUNDARY_1) && defined(D_BONUS1_RATE_1)
-        if (weiRaised < D_WEI_RAISED_BOUNDARY_1 && startTime < D_TIME_BOUNDARY_1) {
-            rate += baseRate * D_BONUS1_RATE_1;
-        }
-        //#endif
-        //#if defined(D_WEI_RAISED_BOUNDARY_2) && defined(D_TIME_BOUNDARY_2) && defined(D_BONUS1_RATE_2)
-        else if (weiRaised < D_WEI_RAISED_BOUNDARY_2 && startTime < D_TIME_BOUNDARY_2) {
-            rate += baseRate * D_BONUS1_RATE_2;
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT + 1] memory weiRaisedBoundaries = [uint(0), D_WEI_RAISED_BOUNDARIES];
+        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT + 1] memory timeBoundaries = [uint64(D_START_TIME), D_TIME_BOUNDARIES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT + 1] memory weiRaisedAndTimeRates = [uint(0), D_WEI_RAISED_AND_TIME_RATES];
+
+        for (uint i = D_WEI_RAISED_AND_TIME_BONUS_COUNT; i >= 0; i--) {
+            if (weiRaised >= weiRaisedBoundaries[i] || now >= timeBoundaries[i]) {
+                rate += baseRate * weiRaisedAndTimeRates[i];
+                break;
+            }
         }
         //#endif
 
+        //#if D_WEI_AMOUNT_BONUS_COUNT > 0
         // apply amount
-        //#if defined(D_WEI_AMOUNT_BOUNDARY_1) && defined(D_BONUS2_RATE_1)
-        if (weiAmount >= D_WEI_AMOUNT_BOUNDARY_1) {
-            rate += rate * D_BONUS2_RATE_1;
-        }
-        //#endif
-        //#if defined(D_WEI_AMOUNT_BOUNDARY_2) && defined(D_BONUS2_RATE_2)
-        else if (weiAmount >= D_WEI_AMOUNT_BOUNDARY_2) {
-            rate += rate * D_BONUS2_RATE_2;
-        }
-        //#endif
-        //#if defined(D_WEI_AMOUNT_BOUNDARY_3) && defined(D_BONUS2_RATE_3)
-        else if (weiAmount >= D_WEI_AMOUNT_BOUNDARY_3) {
-            rate += rate * D_BONUS2_RATE_3;
-        }
-        //#endif
-        //#if defined(D_WEI_AMOUNT_BOUNDARY_4) && defined(D_BONUS2_RATE_4)
-        else if (weiAmount >= D_WEI_AMOUNT_BOUNDARY_4) {
-            rate += rate * D_BONUS2_RATE_4;
+        uint[D_WEI_AMOUNT_BONUS_COUNT + 1] memory weiAmountBoundaries = [uint(0), D_WEI_AMOUNT_BOUNDARIES];
+        uint[D_WEI_AMOUNT_BONUS_COUNT + 1] memory weiAmountRates = [uint(0), D_WEI_AMOUNT_RATES];
+
+        for (i = D_WEI_AMOUNT_BONUS_COUNT; i >= 0; i--) {
+            if (weiAmount >= weiAmountBoundaries[i]) {
+                rate += rate * weiAmountRates[i];
+                break;
+            }
         }
         //#endif
 

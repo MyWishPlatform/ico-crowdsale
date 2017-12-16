@@ -7,8 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test",
-    "postinstall": "patch node_modules/ganache-cli/build/cli.node.js ganache-time.patch"
+    "test": "truffle test"
   },
   "repository": {
     "type": "git",

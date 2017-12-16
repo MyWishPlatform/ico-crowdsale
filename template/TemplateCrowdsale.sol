@@ -7,15 +7,15 @@ import "./Checkable.sol";
 import "./BonusableCrowdsale.sol";
 
 contract TemplateCrowdsale is usingConsts, MainCrowdsale
+    //#if "D_BONUS_TOKENS" != "false"
+    , BonusableCrowdsale
+    //#endif
     //#if D_SOFT_CAP_ETH != 0
     , RefundableCrowdsale
     //#endif
     , CappedCrowdsale
     //#if "D_AUTO_FINALISE" != "false"
     , Checkable
-    //#endif
-    //#if "D_BONUS_TOKENS" != "false"
-    , BonusableCrowdsale
     //#endif
 {
     bool public initialized = false;

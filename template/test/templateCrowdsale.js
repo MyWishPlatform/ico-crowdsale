@@ -8,14 +8,15 @@ const {web3async} = require('./web3Utils');
 const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 const Token = artifacts.require("./MainToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
-const RATE = D_RATE;
-const SOFT_CAP_TOKENS = D_HARD_CAP_ETH * RATE;
+const BASE_RATE = D_RATE;
+const SOFT_CAP_TOKENS = D_HARD_CAP_ETH * BASE_RATE;
 const SOFT_CAP_ETH = D_SOFT_CAP_ETH;
-const HARD_CAP_TOKENS = D_HARD_CAP_ETH * RATE;
+const HARD_CAP_TOKENS = D_HARD_CAP_ETH * BASE_RATE;
 const HARD_CAP_ETH = D_HARD_CAP_ETH;
 const COLD_WALLET = "D_COLD_WALLET";
 const START_TIME = D_START_TIME;
 const END_TIME = D_END_TIME;
+const BONUSABLE = D_BONUS_TOKENS;
 
 const DAY = 24 * 60;
 
@@ -118,10 +119,8 @@ contract('TemplateCrowdsale', async(accounts) => {
     it('#4 check simple buy token', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW + 10);
-        console.log("Started: " + await crowdsale.hasStarted());
-        console.log("Ended: " + await crowdsale.hasEnded());
         const ETH = web3.toWei(1, 'ether');
-        const TOKENS = ETH * RATE;
+        const TOKENS = ETH * BASE_RATE;
 
         await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
         const token = Token.at(await crowdsale.token());
