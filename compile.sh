@@ -1,5 +1,2 @@
 #!/usr/bin/env bash
-rm -rf build
-rm -f contracts/TemplateCrowdsale.sol contracts/BonusableCrowdsale.sol test/templateCrowdsale.js
-source preprocess.sh
-node node_modules/.bin/truffle compile
+source templated-tests/compile-template.sh c-preprocessor-config.json
