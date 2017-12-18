@@ -27,6 +27,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         RefundableCrowdsale(D_SOFT_CAP_ETH * TOKEN_DECIMAL_MULTIPLIER)
         //#endif
     {
+        require(D_SOFT_CAP_ETH <= D_HARD_CAP_ETH);
         token = _token;
     }
 
