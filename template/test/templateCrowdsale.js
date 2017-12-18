@@ -260,4 +260,35 @@ contract('TemplateCrowdsale', async(accounts) => {
         }
     });
     //#endif
+
+    it('#10 check refund before and time and after it if goal did not reached', async () => {
+        const crowdsale = await createCrowdsale();
+        await increaseTime(START_TIME - await getBlockchainTimestamp());
+        await crowdsale.claimRefund().should.eventually.be.rejected;
+
+        await increaseTime(END_TIME - await getBlockchainTimestamp() + 1);
+        await crowdsale.claimRefund().should.eventually.be.rejected;
+    });
+
+    it('#11 check success refund', async () => {
+        const crowdsale = await createCrowdsale();
+        await increaseTime(START_TIME - NOW);
+
+        const eth = web3.toWei(SOFT_CAP_ETH / 2,  'ether');
+        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+        await increaseTime(END_TIME - await getBlockchainTimestamp() + 1);
+        await crowdsale.finalize({from: TARGET_USER});
+
+        const balanceBeforeRefund = await web3async(web3.eth, web3.eth.getBalance, RICH_MAN);
+        const vault = RefundVault.at(await crowdsale.vault());
+        const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
+
+        const refund = await crowdsale.claimRefund({from: RICH_MAN});
+        const gasUsed = web3.toWei(refund.receipt.gasUsed, 'szabo') / 10;
+
+        const balanceAfterRefund = (await web3async(web3.eth, web3.eth.getBalance, RICH_MAN)).add(gasUsed);
+        const returnedFunds = balanceAfterRefund.sub(balanceBeforeRefund);
+
+        returnedFunds.toString().should.be.equals(vaultBalance.toString());
+    });
 });
