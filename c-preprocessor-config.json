@@ -4,7 +4,7 @@
     "D_END_TIME": 1507820400,
     "D_SOFT_CAP_ETH": 10000,
     "D_HARD_CAP_ETH": 100000,
-    "D_RATE": 250,
+    "D_RATE": 1500,
     "D_NAME": "MyWish Token",
     "D_SYMBOL": "WISH",
     "D_DECIMALS": 18,
@@ -21,10 +21,10 @@
     "D_WEI_RAISED_AND_TIME_BONUS_COUNT": 2,
     "D_WEI_RAISED_BOUNDARIES": "uint(11000000),uint(5500000)",
     "D_TIME_BOUNDARIES": "uint64(1507766400),uint64(1507802400)",
-    "D_WEI_RAISED_AND_TIME_RATES": "uint(30)/uint(100),uint(10)/uint(100)",
+    "D_WEI_RAISED_AND_TIME_RATES": "uint(30),uint(10)",
 
     "D_WEI_AMOUNT_BONUS_COUNT": 4,
     "D_WEI_AMOUNT_BOUNDARIES": "uint(15 ether),uint(5 ether),uint(3 ether),uint(1 ether)",
-    "D_WEI_AMOUNT_RATES": "uint(20)/uint(100),uint(10)/uint(100),uint(5)/uint(100),uint(2)/uint(100)"
+    "D_WEI_AMOUNT_RATES": "uint(20),uint(10),uint(6),uint(2)"
   }
 }

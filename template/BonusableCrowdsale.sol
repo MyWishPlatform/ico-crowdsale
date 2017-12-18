@@ -29,13 +29,13 @@ contract BonusableCrowdsale is Crowdsale {
 
         //#if D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         // apply bonus for time & weiRaised
-        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT + 1] memory weiRaisedBoundaries = [uint(0), D_WEI_RAISED_BOUNDARIES];
-        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT + 1] memory timeBoundaries = [uint64(D_START_TIME), D_TIME_BOUNDARIES];
-        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT + 1] memory weiRaisedAndTimeRates = [uint(0), D_WEI_RAISED_AND_TIME_RATES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedBoundaries = [D_WEI_RAISED_BOUNDARIES];
+        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeBoundaries = [D_TIME_BOUNDARIES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedAndTimeRates = [D_WEI_RAISED_AND_TIME_RATES];
 
-        for (uint i = D_WEI_RAISED_AND_TIME_BONUS_COUNT; i >= 0; i--) {
-            if (weiRaised >= weiRaisedBoundaries[i] || now >= timeBoundaries[i]) {
-                rate += baseRate * weiRaisedAndTimeRates[i];
+        for (uint i = 0; i < D_WEI_RAISED_AND_TIME_BONUS_COUNT; i++) {
+            if (weiRaised <= weiRaisedBoundaries[i] || now <= timeBoundaries[i]) {
+                rate += baseRate * weiRaisedAndTimeRates[i] / 100;
                 break;
             }
         }
@@ -43,12 +43,12 @@ contract BonusableCrowdsale is Crowdsale {
 
         //#if D_WEI_AMOUNT_BONUS_COUNT > 0
         // apply amount
-        uint[D_WEI_AMOUNT_BONUS_COUNT + 1] memory weiAmountBoundaries = [uint(0), D_WEI_AMOUNT_BOUNDARIES];
-        uint[D_WEI_AMOUNT_BONUS_COUNT + 1] memory weiAmountRates = [uint(0), D_WEI_AMOUNT_RATES];
+        uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountBoundaries = [D_WEI_AMOUNT_BOUNDARIES];
+        uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountRates = [D_WEI_AMOUNT_RATES];
 
-        for (i = D_WEI_AMOUNT_BONUS_COUNT; i >= 0; i--) {
+        for (i = 0; i < D_WEI_AMOUNT_BONUS_COUNT; i++) {
             if (weiAmount >= weiAmountBoundaries[i]) {
-                rate += rate * weiAmountRates[i];
+                rate += rate * weiAmountRates[i] / 100;
                 break;
             }
         }

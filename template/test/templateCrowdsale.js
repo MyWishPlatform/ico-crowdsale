@@ -9,9 +9,7 @@ const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 const Token = artifacts.require("./MainToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
 const BASE_RATE = D_RATE;
-const SOFT_CAP_TOKENS = D_HARD_CAP_ETH * BASE_RATE;
 const SOFT_CAP_ETH = D_SOFT_CAP_ETH;
-const HARD_CAP_TOKENS = D_HARD_CAP_ETH * BASE_RATE;
 const HARD_CAP_ETH = D_HARD_CAP_ETH;
 const COLD_WALLET = "D_COLD_WALLET";
 const START_TIME = D_START_TIME;
@@ -28,8 +26,28 @@ const initTime = (now) => {
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
 
-// initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
+//#if D_BONUS_TOKENS == true
+const BRACKETS_NUMBER_REX = /\((\d+)\)/;
 
+const weiRaisedBoundaries = 'D_WEI_RAISED_BOUNDARIES'.split(',')
+    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+
+const timeBoundaries = 'D_TIME_BOUNDARIES'.split(',')
+    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+
+const weiRaisedAndTimeRates = "D_WEI_RAISED_AND_TIME_RATES".split(',')
+    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+
+const weiAmountBoundaries = 'D_WEI_AMOUNT_BOUNDARIES'.split(',')
+    .map(w1 => w1.match(/\((\d+ \w+)\)/)[1])
+    .map(w2 => {
+        w2 = w2.split(" ");
+        return Number(web3.toWei(w2[0], w2[1]));
+    });
+
+const weiAmountRates = "D_WEI_AMOUNT_RATES".split(',')
+    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+//#endif
 
 contract('TemplateCrowdsale', async(accounts) => {
     const OWNER = accounts[0];
@@ -48,9 +66,9 @@ contract('TemplateCrowdsale', async(accounts) => {
         return crowdsale;
     };
 
-    const getBlockchainTime = async () => {
+    const getBlockchainTimestamp = async () => {
         const latestBlock = await web3async(web3.eth, web3.eth.getBlock, 'latest');
-        return new Date(latestBlock.timestamp * 1000);
+        return latestBlock.timestamp;
     };
 
     const dumpInfo = async (crowdsale) => {
@@ -60,11 +78,34 @@ contract('TemplateCrowdsale', async(accounts) => {
         console.log("Owner: " + await crowdsale.owner());
     };
 
+    const getRate = async (weiAmount, crowdsale) => {
+        if (!BONUSABLE) return BASE_RATE;
+
+        const now = await getBlockchainTimestamp();
+        const weiRaised = (await crowdsale.weiRaised()).toNumber();
+
+        let rate = BASE_RATE;
+
+        for (let i = 0; i < weiRaisedBoundaries.length; i++) {
+            if (weiRaised <= weiRaisedBoundaries[i] || now <= timeBoundaries[i]) {
+                rate += BASE_RATE * weiRaisedAndTimeRates[i] / 100;
+                break;
+            }
+        }
+
+        for (let i = 0; i < weiAmountBoundaries.length; i++) {
+            if (weiAmount >= weiAmountBoundaries[i]) {
+                rate += rate * weiAmountRates[i] / 100;
+                break;
+            }
+        }
+
+        return rate;
+    };
+
     beforeEach(async () => {
         snapshotId = (await snapshot()).result;
-        const latestBlock = await web3async(web3.eth, web3.eth.getBlock, 'latest');
-        initTime(latestBlock.timestamp);
-        console.info("Now is", NOW);
+        initTime(await getBlockchainTimestamp());
     });
 
     afterEach(async () => {
@@ -119,16 +160,16 @@ contract('TemplateCrowdsale', async(accounts) => {
     it('#4 check simple buy token', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW + 10);
-        const ETH = web3.toWei(1, 'ether');
-        const TOKENS = ETH * BASE_RATE;
+        const eth = web3.toWei(1, 'ether');
+        const tokens = eth * await getRate(eth, crowdsale);
 
-        await crowdsale.sendTransaction({from: BUYER_1, value: ETH});
+        await crowdsale.sendTransaction({from: BUYER_1, value: eth});
         const token = Token.at(await crowdsale.token());
-        (await token.balanceOf(BUYER_1)).toString().should.be.equals(TOKENS.toString());
+        (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString());
 
         const vault = RefundVault.at(await crowdsale.vault());
         const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
-        vaultBalance.toString().should.be.equals(ETH.toString(), 'money should be on vault');
+        vaultBalance.toString().should.be.equals(eth.toString(), 'money should be on vault');
     });
 
     it('#5 check hard cap', async () => {
@@ -142,7 +183,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         await crowdsale.sendTransaction({from: BUYER_1, value: moreOne}).should.eventually.be.rejected;
     });
 
-    it('#7 check finish crowdsale after time', async () => {
+    it('#6 check finish crowdsale after time', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
         await increaseTime(START_TIME - NOW);
@@ -163,7 +204,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
     });
 
-    it('#8 check that tokens are locked', async () => {
+    it('#7 check that tokens are locked', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
         await increaseTime(START_TIME - NOW);
@@ -173,7 +214,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         await token.transfer(BUYER_1, web3.toWei(100, 'ether')).should.eventually.be.rejected;
     });
 
-    it('#9 check finish crowdsale because hardcap', async () => {
+    it('#8 check finish crowdsale because hardcap', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
         await increaseTime(START_TIME - NOW);
@@ -186,4 +227,37 @@ contract('TemplateCrowdsale', async(accounts) => {
         await crowdsale.finalize({from: TARGET_USER});
         (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
     });
+
+    //#if "D_BONUS_TOKENS" == "true"
+    it('#9 check buy tokens with bonuses', async () => {
+        const checkBuyTokensWithTimeIncreasing = async (buyer, weiAmount, atTime) => {
+            await revert(snapshotId);
+            snapshotId = (await snapshot()).result;
+
+            const crowdsale = await createCrowdsale();
+            if (atTime) {
+                await increaseTime(atTime - await getBlockchainTimestamp());
+            }
+
+            const bonusedRate = await getRate(weiAmount, crowdsale);
+            const expectedTokens = weiAmount * bonusedRate;
+            await crowdsale.sendTransaction({from: buyer, value: weiAmount});
+
+            const token = Token.at(await crowdsale.token());
+            (await token.balanceOf(buyer)).toString().should.be.equals(expectedTokens.toString());
+
+            const vault = RefundVault.at(await crowdsale.vault());
+            const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
+            vaultBalance.toString().should.be.equals(weiAmount.toString(), 'money should be on vault');
+        };
+
+        for (let i = 0; i < timeBoundaries.length; i++) {
+            await checkBuyTokensWithTimeIncreasing(BUYER_1, web3.toWei(1, 'ether'), timeBoundaries[i]);
+        }
+
+        for (let i = 0; i < weiAmountBoundaries.length; i++) {
+            await checkBuyTokensWithTimeIncreasing(RICH_MAN, weiAmountBoundaries[1], START_TIME);
+        }
+    });
+    //#endif
 });
