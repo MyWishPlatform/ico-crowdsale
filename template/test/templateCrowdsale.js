@@ -163,13 +163,19 @@ contract('TemplateCrowdsale', async(accounts) => {
         const eth = web3.toWei(1, 'ether');
         const tokens = eth * await getRate(eth, crowdsale);
 
+        const coldWalletSourceBalance =  await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET);
         await crowdsale.sendTransaction({from: BUYER_1, value: eth});
         const token = Token.at(await crowdsale.token());
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString());
 
+        let balance;
+        //#if D_SOFT_CAP_ETH == 0
+        balance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET) - coldWalletSourceBalance;
+        //#else
         const vault = RefundVault.at(await crowdsale.vault());
-        const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
-        vaultBalance.toString().should.be.equals(eth.toString(), 'money should be on vault');
+        balance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
+        //#endif
+        balance.toString().should.be.equals(eth.toString(), 'money should be on vault');
     });
 
     it('#5 check hard cap', async () => {
@@ -241,14 +247,21 @@ contract('TemplateCrowdsale', async(accounts) => {
 
             const bonusedRate = await getRate(weiAmount, crowdsale);
             const expectedTokens = weiAmount * bonusedRate;
+            const coldWalletSourceBalance =  await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET);
             await crowdsale.sendTransaction({from: buyer, value: weiAmount});
 
             const token = Token.at(await crowdsale.token());
             (await token.balanceOf(buyer)).toString().should.be.equals(expectedTokens.toString());
 
+            let balance;
+            //#if D_SOFT_CAP_ETH == 0
+            balance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET) - coldWalletSourceBalance;
+            //#else
             const vault = RefundVault.at(await crowdsale.vault());
-            const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
-            vaultBalance.toString().should.be.equals(weiAmount.toString(), 'money should be on vault');
+            balance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
+            //#endif
+
+            balance.toString().should.be.equals(weiAmount.toString(), 'money should be on vault');
         };
 
         for (let i = 0; i < timeBoundaries.length; i++) {
@@ -261,7 +274,8 @@ contract('TemplateCrowdsale', async(accounts) => {
     });
     //#endif
 
-    it('#10 check refund before and time and after it if goal did not reached', async () => {
+    //#if D_SOFT_CAP_ETH != 0
+    it('#10 check refund before time and after it if goal did not reached', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - await getBlockchainTimestamp());
         await crowdsale.claimRefund().should.eventually.be.rejected;
@@ -291,4 +305,5 @@ contract('TemplateCrowdsale', async(accounts) => {
 
         returnedFunds.toString().should.be.equals(vaultBalance.toString());
     });
+    //#endif
 });
