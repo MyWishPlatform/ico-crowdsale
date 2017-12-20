@@ -21,10 +21,10 @@
     "D_WEI_RAISED_AND_TIME_BONUS_COUNT": 2,
     "D_WEI_RAISED_BOUNDARIES": "uint(11000000),uint(5500000)",
     "D_TIME_BOUNDARIES": "uint64(1507766400),uint64(1507802400)",
-    "D_WEI_RAISED_AND_TIME_RATES": "uint(30),uint(10)",
+    "D_WEI_RAISED_AND_TIME_MILLIRATES": "uint(600),uint(200)",
 
-    "D_WEI_AMOUNT_BONUS_COUNT": 4,
-    "D_WEI_AMOUNT_BOUNDARIES": "uint(15 ether),uint(5 ether),uint(3 ether),uint(1 ether)",
-    "D_WEI_AMOUNT_RATES": "uint(20),uint(10),uint(6),uint(2)"
+    "D_WEI_AMOUNT_BONUS_COUNT": 5,
+    "D_WEI_AMOUNT_BOUNDARIES": "uint(18 ether),uint(7 ether),uint(4 ether),uint(2 ether),uint(1 ether)",
+    "D_WEI_AMOUNT_MILLIRATES": "uint(200),uint(100),uint(60),uint(20),uint(5)"
   }
 }

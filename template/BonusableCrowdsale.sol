@@ -31,11 +31,11 @@ contract BonusableCrowdsale is Crowdsale {
         // apply bonus for time & weiRaised
         uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedBoundaries = [D_WEI_RAISED_BOUNDARIES];
         uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeBoundaries = [D_TIME_BOUNDARIES];
-        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedAndTimeRates = [D_WEI_RAISED_AND_TIME_RATES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedAndTimeRates = [D_WEI_RAISED_AND_TIME_MILLIRATES];
 
         for (uint i = 0; i < D_WEI_RAISED_AND_TIME_BONUS_COUNT; i++) {
             if (weiRaised <= weiRaisedBoundaries[i] || now <= timeBoundaries[i]) {
-                rate += baseRate * weiRaisedAndTimeRates[i] / 100;
+                rate += baseRate * weiRaisedAndTimeRates[i] / 1000;
                 break;
             }
         }
@@ -44,11 +44,11 @@ contract BonusableCrowdsale is Crowdsale {
         //#if D_WEI_AMOUNT_BONUS_COUNT > 0
         // apply amount
         uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountBoundaries = [D_WEI_AMOUNT_BOUNDARIES];
-        uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountRates = [D_WEI_AMOUNT_RATES];
+        uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountRates = [D_WEI_AMOUNT_MILLIRATES];
 
         for (i = 0; i < D_WEI_AMOUNT_BONUS_COUNT; i++) {
             if (weiAmount >= weiAmountBoundaries[i]) {
-                rate += rate * weiAmountRates[i] / 100;
+                rate += rate * weiAmountRates[i] / 1000;
                 break;
             }
         }

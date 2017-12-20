@@ -35,7 +35,7 @@ const weiRaisedBoundaries = 'D_WEI_RAISED_BOUNDARIES'.split(',')
 const timeBoundaries = 'D_TIME_BOUNDARIES'.split(',')
     .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
 
-const weiRaisedAndTimeRates = "D_WEI_RAISED_AND_TIME_RATES".split(',')
+const weiRaisedAndTimeRates = "D_WEI_RAISED_AND_TIME_MILLIRATES".split(',')
     .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
 
 const weiAmountBoundaries = 'D_WEI_AMOUNT_BOUNDARIES'.split(',')
@@ -45,7 +45,7 @@ const weiAmountBoundaries = 'D_WEI_AMOUNT_BOUNDARIES'.split(',')
         return Number(web3.toWei(w2[0], w2[1]));
     });
 
-const weiAmountRates = "D_WEI_AMOUNT_RATES".split(',')
+const weiAmountRates = "D_WEI_AMOUNT_MILLIRATES".split(',')
     .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
 //#endif
 
@@ -88,14 +88,14 @@ contract('TemplateCrowdsale', async(accounts) => {
 
         for (let i = 0; i < weiRaisedBoundaries.length; i++) {
             if (weiRaised <= weiRaisedBoundaries[i] || now <= timeBoundaries[i]) {
-                rate += BASE_RATE * weiRaisedAndTimeRates[i] / 100;
+                rate += BASE_RATE * weiRaisedAndTimeRates[i] / 1000;
                 break;
             }
         }
 
         for (let i = 0; i < weiAmountBoundaries.length; i++) {
             if (weiAmount >= weiAmountBoundaries[i]) {
-                rate += rate * weiAmountRates[i] / 100;
+                rate += rate * weiAmountRates[i] / 1000;
                 break;
             }
         }
