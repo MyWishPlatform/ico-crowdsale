@@ -18,6 +18,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     , Checkable
     //#endif
 {
+    event Initialized();
     bool public initialized = false;
 
     function TemplateCrowdsale(MintableToken _token)
@@ -51,6 +52,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         //#endif
 
         transferOwnership(D_COLD_WALLET);
+        Initialized();
     }
 
     /**

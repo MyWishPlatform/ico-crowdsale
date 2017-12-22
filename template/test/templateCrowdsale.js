@@ -16,7 +16,7 @@ const START_TIME = D_START_TIME;
 const END_TIME = D_END_TIME;
 const BONUSABLE = D_BONUS_TOKENS;
 
-const DAY = 24 * 60;
+const DAY = 24 * 3600;
 
 let NOW, TOMORROW, DAY_AFTER_TOMORROW;
 
