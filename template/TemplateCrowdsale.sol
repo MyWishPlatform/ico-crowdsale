@@ -10,7 +10,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     //#if "D_BONUS_TOKENS" != "false"
     , BonusableCrowdsale
     //#endif
-    //#if D_SOFT_CAP_ETH != 0
+    //#if D_SOFT_CAP_WEI != 0
     , RefundableCrowdsale
     //#endif
     , CappedCrowdsale
@@ -23,9 +23,9 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
 
     function TemplateCrowdsale(MintableToken _token)
         Crowdsale(D_START_TIME, D_END_TIME, D_RATE, D_COLD_WALLET)
-        CappedCrowdsale(D_HARD_CAP_ETH)
-        //#if D_SOFT_CAP_ETH != 0
-        RefundableCrowdsale(D_SOFT_CAP_ETH)
+        CappedCrowdsale(D_HARD_CAP_WEI)
+        //#if D_SOFT_CAP_WEI != 0
+        RefundableCrowdsale(D_SOFT_CAP_WEI)
         //#endif
     {
         token = _token;

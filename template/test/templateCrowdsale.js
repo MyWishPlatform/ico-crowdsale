@@ -9,8 +9,8 @@ const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 const Token = artifacts.require("./MainToken.sol");
 const RefundVault = artifacts.require("./RefundVault.sol");
 const BASE_RATE = D_RATE;
-const SOFT_CAP_ETH = D_SOFT_CAP_ETH;
-const HARD_CAP_ETH = D_HARD_CAP_ETH;
+const SOFT_CAP_WEI = D_SOFT_CAP_WEI;
+const HARD_CAP_WEI = D_HARD_CAP_WEI;
 const COLD_WALLET = "D_COLD_WALLET";
 const START_TIME = D_START_TIME;
 const END_TIME = D_END_TIME;
@@ -169,7 +169,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString());
 
         let balance;
-        //#if D_SOFT_CAP_ETH == 0
+        //#if D_SOFT_CAP_WEI == 0
         balance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET) - coldWalletSourceBalance;
         //#else
         const vault = RefundVault.at(await crowdsale.vault());
@@ -182,8 +182,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
-        const eth = web3.toWei(HARD_CAP_ETH, "ether");
-        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+        await crowdsale.sendTransaction({from: RICH_MAN, value: HARD_CAP_WEI});
 
         const moreOne = web3.toWei(1, 'ether');
         await crowdsale.sendTransaction({from: BUYER_1, value: moreOne}).should.eventually.be.rejected;
@@ -226,8 +225,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         await increaseTime(START_TIME - NOW);
 
         // reach hard cap
-        const eth = web3.toWei(HARD_CAP_ETH);
-        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+        await crowdsale.sendTransaction({from: RICH_MAN, value: HARD_CAP_WEI});
 
         // finalize
         await crowdsale.finalize({from: TARGET_USER});
@@ -254,7 +252,7 @@ contract('TemplateCrowdsale', async(accounts) => {
             (await token.balanceOf(buyer)).toString().should.be.equals(expectedTokens.toString());
 
             let balance;
-            //#if D_SOFT_CAP_ETH == 0
+            //#if D_SOFT_CAP_WEI == 0
             balance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET) - coldWalletSourceBalance;
             //#else
             const vault = RefundVault.at(await crowdsale.vault());
@@ -274,7 +272,7 @@ contract('TemplateCrowdsale', async(accounts) => {
     });
     //#endif
 
-    //#if D_SOFT_CAP_ETH != 0
+    //#if D_SOFT_CAP_WEI != 0
     it('#10 check refund before time and after it if goal did not reached', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - await getBlockchainTimestamp());
@@ -288,7 +286,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
-        const eth = web3.toWei(SOFT_CAP_ETH / 2,  'ether');
+        const eth = SOFT_CAP_WEI / 2;
         await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
         await increaseTime(END_TIME - await getBlockchainTimestamp() + 1);
         await crowdsale.finalize({from: TARGET_USER});
