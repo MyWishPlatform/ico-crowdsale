@@ -23,12 +23,11 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
 
     function TemplateCrowdsale(MintableToken _token)
         Crowdsale(D_START_TIME, D_END_TIME, D_RATE, D_COLD_WALLET)
-        CappedCrowdsale(D_HARD_CAP_ETH * TOKEN_DECIMAL_MULTIPLIER)
+        CappedCrowdsale(D_HARD_CAP_ETH * 1 ether)
         //#if D_SOFT_CAP_ETH != 0
-        RefundableCrowdsale(D_SOFT_CAP_ETH * TOKEN_DECIMAL_MULTIPLIER)
+        RefundableCrowdsale(D_SOFT_CAP_ETH * 1 ether)
         //#endif
     {
-        require(D_SOFT_CAP_ETH <= D_HARD_CAP_ETH);
         token = _token;
     }
 
