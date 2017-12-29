@@ -209,14 +209,18 @@ contract('TemplateCrowdsale', async(accounts) => {
         (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
     });
 
-    it('#7 check that tokens are locked', async () => {
+    it('#7 check tokens locking', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
         await increaseTime(START_TIME - NOW);
 
         await crowdsale.send(web3.toWei(1, 'ether'));
 
+        //#if D_PAUSE_TOKENS == true
         await token.transfer(BUYER_1, web3.toWei(100, 'ether')).should.eventually.be.rejected;
+        //#else
+        await token.transfer(BUYER_1, web3.toWei(100, 'ether'));
+        //#endif
     });
 
     it('#8 check finish crowdsale because hardcap', async () => {
@@ -232,7 +236,7 @@ contract('TemplateCrowdsale', async(accounts) => {
         (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
     });
 
-    //#if "D_BONUS_TOKENS" == "true"
+    //#if D_BONUS_TOKENS == true
     it('#9 check buy tokens with bonuses', async () => {
         const checkBuyTokensWithTimeIncreasing = async (buyer, weiAmount, atTime) => {
             await revert(snapshotId);
