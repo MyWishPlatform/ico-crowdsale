@@ -4,6 +4,7 @@
     "//#if": "\n#if",
     "//#endif": "\n#endif",
     "//#define": "\n#define",
+    "//#ifdef": "\n#ifdef",
     "//#else": "\n#else",
     "//#elif": "\n#elif"
   }

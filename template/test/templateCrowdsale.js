@@ -34,8 +34,8 @@ const initTime = (now) => {
  * 'uint(4000000000 gwei)'      to 4000000000000000000
  */
 String.prototype.toWeiNumber = function () {
-    let match = this.match(/\((\d+)( (\w+))?\)/);
-    return match[3] ? Number(web3.toWei(match[1], match[3])) : match[1];
+    const match = this.match(/\((\d+)( (\w+))?\)/);
+    return match[3] ? Number(web3.toWei(match[1], match[3])) : Number(match[1]);
 };
 
 //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
@@ -317,7 +317,7 @@ contract('TemplateCrowdsale', accounts => {
         const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
 
         const refund = await crowdsale.claimRefund({from: RICH_MAN});
-        const gasUsed = web3.toWei(refund.receipt.gasUsed, 'szabo') / 10;
+        const gasUsed = refund.receipt.gasUsed * web3.toWei(100, 'gwei');
 
         const balanceAfterRefund = (await web3async(web3.eth, web3.eth.getBalance, RICH_MAN)).add(gasUsed);
         const returnedFunds = balanceAfterRefund.sub(balanceBeforeRefund);
