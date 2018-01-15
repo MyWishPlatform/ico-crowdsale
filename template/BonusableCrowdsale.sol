@@ -27,7 +27,7 @@ contract BonusableCrowdsale is Crowdsale {
         uint256 baseRate = D_RATE;
         uint256 rate = baseRate;
 
-        //#if D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
+        //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         // apply bonus for time & weiRaised
         uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedBoundaries = [D_WEI_RAISED_BOUNDARIES];
         uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeBoundaries = [D_TIME_BOUNDARIES];
@@ -41,14 +41,14 @@ contract BonusableCrowdsale is Crowdsale {
         }
         //#endif
 
-        //#if D_WEI_AMOUNT_BONUS_COUNT > 0
+        //#if defined(D_WEI_AMOUNT_BONUS_COUNT) && D_WEI_AMOUNT_BONUS_COUNT > 0
         // apply amount
         uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountBoundaries = [D_WEI_AMOUNT_BOUNDARIES];
         uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountRates = [D_WEI_AMOUNT_MILLIRATES];
 
-        for (i = 0; i < D_WEI_AMOUNT_BONUS_COUNT; i++) {
-            if (weiAmount >= weiAmountBoundaries[i]) {
-                rate += rate * weiAmountRates[i] / 1000;
+        for (uint j = 0; j < D_WEI_AMOUNT_BONUS_COUNT; j++) {
+            if (weiAmount >= weiAmountBoundaries[j]) {
+                rate += rate * weiAmountRates[j] / 1000;
                 break;
             }
         }

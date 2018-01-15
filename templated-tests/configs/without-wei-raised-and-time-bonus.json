@@ -11,11 +11,15 @@
     "D_COLD_WALLET": "0x9b37d7b266a41ef130c4625850c8484cf928000d",
     "D_AUTO_FINALISE": true,
     "D_PAUSE_TOKENS": true,
-    "D_BONUS_TOKENS": false,
+    "D_BONUS_TOKENS": true,
 
     "D_PREMINT_COUNT": 3,
     "D_PREMINT_ADDRESSES": "address(0x0000001b717aDd3E840343364EC9d971FBa3955C),address(0x0000002b717aDd3E840343364EC9d971FBa3955C),address(0x0000003b717aDd3E840343364EC9d971FBa3955C)",
     "D_PREMINT_AMOUNTS": "uint(1000000),uint(2000000),uint(3000000)",
-    "D_PREMINT_FREEZES": "uint64(1539709200),uint64(0),uint64(1539709200)"
+    "D_PREMINT_FREEZES": "uint64(1539709200),uint64(0),uint64(1539709200)",
+
+    "D_WEI_AMOUNT_BONUS_COUNT": 5,
+    "D_WEI_AMOUNT_BOUNDARIES": "uint(18 ether),uint(7 ether),uint(4 ether),uint(2 ether),uint(1 ether)",
+    "D_WEI_AMOUNT_MILLIRATES": "uint(200),uint(100),uint(60),uint(20),uint(5)"
   }
 }
