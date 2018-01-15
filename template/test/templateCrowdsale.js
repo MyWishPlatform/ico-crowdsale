@@ -34,20 +34,8 @@ const initTime = (now) => {
  * 'uint(4000000000 gwei)'      to 4000000000000000000
  */
 String.prototype.toWeiNumber = function () {
-    const BRACKETS_NUMBER_REX = /\((\d+)\)/;
-    const BRACKETS_NUMBER_WITH_POSTFIX_REX = /\((\d+ \w+)\)/;
-
-    // console.info('this', this);
-    let match = this.match(BRACKETS_NUMBER_WITH_POSTFIX_REX);
-    if (match) {
-        match = match[1].split(' ');
-        return Number(web3.toWei(match[0], match[1]));
-    }
-
-    match = this.match(BRACKETS_NUMBER_REX);
-    if (match) {
-        return match[1];
-    }
+    let match = this.match(/\((\d+)( (\w+))?\)/);
+    return match[3] ? Number(web3.toWei(match[1], match[3])) : match[1];
 };
 
 //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
