@@ -52,7 +52,7 @@ const weiAmountRates = "D_WEI_AMOUNT_MILLIRATES".split(',')
 //#endif
 //#endif
 
-contract('TemplateCrowdsale', async (accounts) => {
+contract('TemplateCrowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
@@ -90,7 +90,7 @@ contract('TemplateCrowdsale', async (accounts) => {
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         for (let i = 0; i < weiRaisedBoundaries.length; i++) {
-            if (weiRaised <= weiRaisedBoundaries[i] || now <= timeBoundaries[i]) {
+            if (weiRaised <= weiRaisedBoundaries[i] && now <= timeBoundaries[i]) {
                 rate += Math.floor(BASE_RATE * weiRaisedAndTimeRates[i] / 1000);
                 break;
             }
@@ -317,15 +317,6 @@ contract('TemplateCrowdsale', async (accounts) => {
         const returnedFunds = balanceAfterRefund.sub(balanceBeforeRefund);
 
         returnedFunds.toString().should.be.equals(vaultBalance.toString());
-    });
-    //#endif
-
-    //#if D_BONUS_TOKENS == true
-    it('#12 advanced bonus test', async () => {
-        const crowdsale = await createCrowdsale();
-        await increaseTime(START_TIME - NOW);
-
-
     });
     //#endif
 });

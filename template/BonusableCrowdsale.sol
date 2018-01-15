@@ -34,7 +34,7 @@ contract BonusableCrowdsale is Crowdsale {
         uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedAndTimeRates = [D_WEI_RAISED_AND_TIME_MILLIRATES];
 
         for (uint i = 0; i < D_WEI_RAISED_AND_TIME_BONUS_COUNT; i++) {
-            if (weiRaised <= weiRaisedBoundaries[i] || now <= timeBoundaries[i]) {
+            if (weiRaised <= weiRaisedBoundaries[i] && now <= timeBoundaries[i]) {
                 rate += baseRate * weiRaisedAndTimeRates[i] / 1000;
                 break;
             }
