@@ -26,29 +26,47 @@ const initTime = (now) => {
 };
 
 //#if D_BONUS_TOKENS == true
-const BRACKETS_NUMBER_REX = /\((\d+)\)/;
+
+/**
+ * Mapping string to number, eg:
+ * 'uint(18000000000000000000)' to 18000000000000000000
+ * 'uint(7 ether)'              to 7000000000000000000
+ * 'uint(4000000000 gwei)'      to 4000000000000000000
+ */
+String.prototype.toWeiNumber = function () {
+    const BRACKETS_NUMBER_REX = /\((\d+)\)/;
+    const BRACKETS_NUMBER_WITH_POSTFIX_REX = /\((\d+ \w+)\)/;
+
+    // console.info('this', this);
+    let match = this.match(BRACKETS_NUMBER_WITH_POSTFIX_REX);
+    if (match) {
+        match = match[1].split(' ');
+        return Number(web3.toWei(match[0], match[1]));
+    }
+
+    match = this.match(BRACKETS_NUMBER_REX);
+    if (match) {
+        return match[1];
+    }
+};
 
 //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
 const weiRaisedBoundaries = 'D_WEI_RAISED_BOUNDARIES'.split(',')
-    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+    .map(s => s.toWeiNumber());
 
 const timeBoundaries = 'D_TIME_BOUNDARIES'.split(',')
-    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+    .map(w => w.toWeiNumber());
 
 const weiRaisedAndTimeRates = "D_WEI_RAISED_AND_TIME_MILLIRATES".split(',')
-    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+    .map(w => w.toWeiNumber());
 //#endif
 
 //#if defined(D_WEI_AMOUNT_BONUS_COUNT) && D_WEI_AMOUNT_BONUS_COUNT > 0
 const weiAmountBoundaries = 'D_WEI_AMOUNT_BOUNDARIES'.split(',')
-    .map(w1 => w1.match(/\((\d+ \w+)\)/)[1])
-    .map(w2 => {
-        w2 = w2.split(" ");
-        return Number(web3.toWei(w2[0], w2[1]));
-    });
+    .map(s => s.toWeiNumber());
 
 const weiAmountRates = "D_WEI_AMOUNT_MILLIRATES".split(',')
-    .map(w => w.match(BRACKETS_NUMBER_REX)[1]);
+    .map(w => w.toWeiNumber());
 //#endif
 //#endif
 
