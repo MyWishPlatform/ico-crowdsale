@@ -173,7 +173,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#4 check simple buy token', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW + 10);
-        const eth = web3.toWei(1, 'ether');
+        const eth = SOFT_CAP_WEI / 2;
         const tokens = eth * await getRate(eth, crowdsale);
 
         const coldWalletSourceBalance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET);
@@ -207,7 +207,7 @@ contract('TemplateCrowdsale', accounts => {
         await increaseTime(START_TIME - NOW);
 
         // send some tokens
-        await crowdsale.send(web3.toWei(1, 'ether'));
+        await crowdsale.send(SOFT_CAP_WEI / 2);
 
         // try to finalize before the END
         await crowdsale.finalize({from: TARGET_USER}).should.eventually.be.rejected;
@@ -227,7 +227,7 @@ contract('TemplateCrowdsale', accounts => {
         const token = Token.at(await crowdsale.token());
         await increaseTime(START_TIME - NOW);
 
-        await crowdsale.send(web3.toWei(1, 'ether'));
+        await crowdsale.send(SOFT_CAP_WEI / 2);
 
         //#if D_PAUSE_TOKENS == true
         await token.transfer(BUYER_1, web3.toWei(100, 'ether')).should.eventually.be.rejected;
@@ -281,7 +281,7 @@ contract('TemplateCrowdsale', accounts => {
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         for (let i = 0; i < timeBoundaries.length; i++) {
-            await checkBuyTokensWithTimeIncreasing(BUYER_1, web3.toWei(1, 'ether'), timeBoundaries[i]);
+            await checkBuyTokensWithTimeIncreasing(BUYER_1, SOFT_CAP_WEI / 2, timeBoundaries[i]);
         }
         //#endif
 
