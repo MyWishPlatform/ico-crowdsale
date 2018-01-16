@@ -264,6 +264,7 @@ contract('TemplateCrowdsale', accounts => {
     //#if D_BONUS_TOKENS == true
     it('#9 check buy tokens with bonuses', async () => {
         const checkBuyTokensWithTimeIncreasing = async (buyer, weiAmount, atTime) => {
+            weiAmount = Number(weiAmount);
             await revert(snapshotId);
             snapshotId = (await snapshot()).result;
 
