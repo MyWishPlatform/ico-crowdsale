@@ -1,8 +1,9 @@
 pragma solidity ^0.4.0;
 
 import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
+import "./Consts.sol";
 
-contract BonusableCrowdsale is Crowdsale {
+contract BonusableCrowdsale is usingConsts, Crowdsale {
 
     function buyTokens(address beneficiary) public payable {
         require(beneficiary != address(0));
@@ -12,7 +13,7 @@ contract BonusableCrowdsale is Crowdsale {
 
         // calculate token amount to be created
         uint256 bonusRate = getBonusRate(weiAmount);
-        uint256 tokens = weiAmount.mul(bonusRate);
+        uint256 tokens = weiAmount.mul(bonusRate).mul(TOKEN_DECIMAL_MULTIPLIER).div(1 ether);
 
         // update state
         weiRaised = weiRaised.add(weiAmount);

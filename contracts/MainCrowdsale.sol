@@ -24,4 +24,22 @@ contract MainCrowdsale is usingConsts, FinalizableCrowdsale {
         token.finishMinting();
         token.transferOwnership(TARGET_USER);
     }
+
+    function buyTokens(address beneficiary) public payable {
+        require(beneficiary != address(0));
+        require(validPurchase());
+
+        uint256 weiAmount = msg.value;
+
+        // calculate token amount to be created
+        uint256 tokens = weiAmount.mul(rate).mul(TOKEN_DECIMAL_MULTIPLIER).div(1 ether);
+
+        // update state
+        weiRaised = weiRaised.add(weiAmount);
+
+        token.mint(beneficiary, tokens);
+        TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+
+        forwardFunds();
+    }
 }
