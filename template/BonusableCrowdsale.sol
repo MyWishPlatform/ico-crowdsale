@@ -30,14 +30,17 @@ contract BonusableCrowdsale is usingConsts, Crowdsale {
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         // apply bonus for time & weiRaised
-        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedBoundaries = [D_WEI_RAISED_BOUNDARIES];
-        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeBoundaries = [D_TIME_BOUNDARIES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedStartsBoundaries = [D_WEI_RAISED_STARTS_BOUNDARIES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedEndsBoundaries = [D_WEI_RAISED_ENDS_BOUNDARIES];
+        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeStartsBoundaries = [D_TIME_STARTS_BOUNDARIES];
+        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeEndsBoundaries = [D_TIME_ENDS_BOUNDARIES];
         uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedAndTimeRates = [D_WEI_RAISED_AND_TIME_MILLIRATES];
 
         for (uint i = 0; i < D_WEI_RAISED_AND_TIME_BONUS_COUNT; i++) {
-            if (weiRaised <= weiRaisedBoundaries[i] && now <= timeBoundaries[i]) {
-                rate += baseRate * weiRaisedAndTimeRates[i] / 1000;
-                break;
+            bool weiRaisedInBound = (weiRaisedStartsBoundaries[i] <= weiRaised) && (weiRaised < weiRaisedEndsBoundaries[i]);
+            bool timeInBound = (timeStartsBoundaries[i] <= now) && (now < timeEndsBoundaries[i]);
+            if (weiRaisedInBound && timeInBound) {
+                rate += rate * weiRaisedAndTimeRates[i] / 1000;
             }
         }
         //#endif
