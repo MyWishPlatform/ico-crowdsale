@@ -191,12 +191,12 @@ contract('TemplateCrowdsale', accounts => {
         //#if D_SOFT_CAP_WEI == 0
         eth = new web3.BigNumber(web3.toWei(1, 'ether'));
         //#endif
-        const expectedTokens = eth.mul(await getRate(eth, crowdsale)).div(ETHER);
+        const expectedTokens = eth.mul(await getRate(eth, crowdsale)).div(ETHER).mul(TOKEN_DECIMAL_MULTIPLIER).floor();
 
         const coldWalletSourceBalance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET);
         await crowdsale.sendTransaction({from: BUYER_1, value: eth});
         const token = Token.at(await crowdsale.token());
-        const actualTokens = (await token.balanceOf(BUYER_1)).div(TOKEN_DECIMAL_MULTIPLIER).floor();
+        const actualTokens = (await token.balanceOf(BUYER_1));
         actualTokens.toString().should.be.equals(expectedTokens.toString());
 
         let balance;
@@ -238,7 +238,7 @@ contract('TemplateCrowdsale', accounts => {
         // finalize after the END time
         await crowdsale.finalize({from: TARGET_USER});
         // try to transfer some tokens (it should work now)
-        const tokens = toTokens(eth.mul(await getRate(eth, crowdsale)));
+        const tokens = eth.mul(await getRate(eth, crowdsale)).div(ETHER).mul(TOKEN_DECIMAL_MULTIPLIER).floor();
         await token.transfer(BUYER_1, tokens);
         (await token.balanceOf(BUYER_1)).toString().should.be.equals(tokens.toString(), 'balanceOf buyer must be');
         (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
@@ -287,7 +287,9 @@ contract('TemplateCrowdsale', accounts => {
                 await increaseTime(atTime - await getBlockchainTimestamp());
             }
 
-            const expectedTokens = toTokens(weiAmount.mul(await getRate(weiAmount, crowdsale)));
+            const expectedTokens = weiAmount.mul(await getRate(weiAmount, crowdsale))
+                .div(ETHER).mul(TOKEN_DECIMAL_MULTIPLIER)
+                .floor();
             const coldWalletSourceBalance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET);
             await crowdsale.sendTransaction({from: buyer, value: weiAmount});
 
