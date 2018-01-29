@@ -22,7 +22,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     bool public initialized = false;
 
     function TemplateCrowdsale(MintableToken _token)
-        Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE, D_COLD_WALLET)
+        Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE, TARGET_USER)
         CappedCrowdsale(D_HARD_CAP_WEI)
         //#if D_SOFT_CAP_WEI != 0
         RefundableCrowdsale(D_SOFT_CAP_WEI)
@@ -50,7 +50,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         }
         //#endif
 
-        transferOwnership(D_COLD_WALLET);
+        transferOwnership(TARGET_USER);
         Initialized();
     }
 
@@ -59,6 +59,13 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
      */
     function createTokenContract() internal returns (MintableToken) {
         return MintableToken(0);
+    }
+
+    function finalization() internal {
+        super.finalization();
+        //#if "D_CONTINUE_MINTING" != "false"
+        token.transferOwnership(D_MYWISH_ADDRESS);
+        //#endif
     }
 
     //#if "D_AUTO_FINALISE" != "false"

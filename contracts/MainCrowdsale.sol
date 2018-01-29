@@ -18,6 +18,10 @@ contract MainCrowdsale is usingConsts, FinalizableCrowdsale {
 
     function finalization() internal {
         super.finalization();
+        if (CONTINUE_MINTING) {
+            return;
+        }
+
         if (PAUSED) {
             MainToken(token).unpause();
         }

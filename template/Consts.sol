@@ -10,4 +10,5 @@ contract usingConsts {
     bool constant PAUSED = D_PAUSE_TOKENS;
     address constant TARGET_USER = D_COLD_WALLET;
     uint constant START_TIME = D_START_TIME;
+    bool constant CONTINUE_MINTING = D_CONTINUE_MINTING;
 }

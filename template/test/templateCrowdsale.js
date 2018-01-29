@@ -260,9 +260,20 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.finalize({from: TARGET_USER});
         // try to transfer some tokens (it should work now)
         const tokens = await tokensForWei(wei, crowdsale);
+
+        //#if D_CONTINUE_MINTING == true
+        await token.owner().should.eventually.be.equals(OWNER, 'token owner must be OWNER (server address), not a TARGET_USER');
+        await token.mint(BUYER_2, tokens, {from: OWNER});
+        await token.balanceOf(BUYER_2).should.eventually.be.bignumber.equals(tokens, 'balanceOf just minted tokens must be');
+        //#else
+        // mint must be disabled
+        await token.owner().should.eventually.be.equals(TARGET_USER);
+        await token.mint(BUYER_2, tokens, {from: TARGET_USER}).should.eventually.be.rejected;
+
         await token.transfer(BUYER_1, tokens);
-        (await token.balanceOf(BUYER_1)).should.be.bignumber.equal(tokens, 'balanceOf buyer must be');
-        (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
+        await token.balanceOf(BUYER_1).should.eventually.be.bignumber.equals(tokens, 'balanceOf buyer must be');
+        await token.owner().should.eventually.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not OWNER');
+        //#endif
     });
 
     it('#9 check tokens locking', async () => {
@@ -294,7 +305,11 @@ contract('TemplateCrowdsale', accounts => {
 
         // finalize
         await crowdsale.finalize({from: TARGET_USER});
-        (await token.owner()).should.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not crowdsale');
+        //#if D_CONTINUE_MINTING == true
+        await token.owner().should.eventually.be.equals(OWNER, 'token owner must be OWNER (server address), not a TARGET_USER');
+        //#else
+        await token.owner().should.eventually.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not OWNER');
+        //#endif
     });
 
     it('#11 check finish crowdsale because time', async () => {
