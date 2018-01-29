@@ -1,4 +1,4 @@
-const ether = '0000000000000000000';
+const ether = 10**18;
 const ganache = require("ganache-cli");
 require('./utils/revertTime.js');
 
@@ -7,8 +7,8 @@ module.exports = {
         ganache: {
             network_id: "*",
             provider: ganache.provider({
-                accounts: [1000000000000, 1000000000000, 1000000000000, 1000000000000, 1].map(function (v) {
-                    return {balance: "" + v + ether};
+                accounts: [10**100, 10**100, 10**100, 10**100, 1].map(function (v) {
+                    return {balance: v * ether};
                 }),
                 mnemonic: "mywish",
                 time: new Date("2017-10-10T15:00:00Z"),

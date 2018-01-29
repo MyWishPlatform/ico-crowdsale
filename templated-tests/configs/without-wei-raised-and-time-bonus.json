@@ -19,7 +19,7 @@
     "D_PREMINT_FREEZES": "uint64(1539709200),uint64(0),uint64(1539709200)",
 
     "D_WEI_AMOUNT_BONUS_COUNT": 5,
-    "D_WEI_AMOUNT_BOUNDARIES": "uint(18 ether),uint(7 ether),uint(4 ether),uint(2 ether),uint(1 ether)",
+    "D_WEI_AMOUNT_BOUNDARIES": "uint(18000000000000000000),uint(7000000000000000000),uint(4000000000000000000),uint(2000000000000000000),uint(1000000000000000000)",
     "D_WEI_AMOUNT_MILLIRATES": "uint(200),uint(100),uint(60),uint(20),uint(5)"
   }
 }
