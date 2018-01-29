@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-source templated-tests/compile-template.sh c-preprocessor-config.json
+CONFIG=$1
+CONFIG="${CONFIG:-c-preprocessor-config.json}"
+source templated-tests/compile-template.sh "$CONFIG"

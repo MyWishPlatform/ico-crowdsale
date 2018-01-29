@@ -264,14 +264,14 @@ contract('TemplateCrowdsale', accounts => {
         //#if D_CONTINUE_MINTING == true
         await token.owner().should.eventually.be.equals(OWNER, 'token owner must be OWNER (server address), not a TARGET_USER');
         await token.mint(BUYER_2, tokens, {from: OWNER});
-        await token.balanceOf(BUYER_2).should.eventually.be.bignumber.equals(tokens, 'balanceOf just minted tokens must be');
+        (await token.balanceOf(BUYER_2)).should.be.bignumber.equals(tokens, 'balanceOf just minted tokens must be');
         //#else
         // mint must be disabled
         await token.owner().should.eventually.be.equals(TARGET_USER);
         await token.mint(BUYER_2, tokens, {from: TARGET_USER}).should.eventually.be.rejected;
 
         await token.transfer(BUYER_1, tokens);
-        await token.balanceOf(BUYER_1).should.eventually.be.bignumber.equals(tokens, 'balanceOf buyer must be');
+        (await token.balanceOf(BUYER_1)).should.be.bignumber.equals(tokens, 'balanceOf buyer must be');
         await token.owner().should.eventually.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not OWNER');
         //#endif
     });
