@@ -22,7 +22,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     bool public initialized = false;
 
     function TemplateCrowdsale(MintableToken _token)
-        Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE, TARGET_USER)
+        Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE * TOKEN_DECIMAL_MULTIPLIER, TARGET_USER)
         CappedCrowdsale(D_HARD_CAP_WEI)
         //#if D_SOFT_CAP_WEI != 0
         RefundableCrowdsale(D_SOFT_CAP_WEI)

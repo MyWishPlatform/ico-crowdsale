@@ -98,7 +98,7 @@ contract('TemplateCrowdsale', accounts => {
     };
 
     const getRate = async (weiAmount, crowdsale) => {
-        let rate = BASE_RATE;
+        let rate = BASE_RATE.mul(TOKEN_DECIMAL_MULTIPLIER);
 
         //#if D_BONUS_TOKENS == true
         const now = new web3.BigNumber(await getBlockchainTimestamp());
@@ -127,7 +127,7 @@ contract('TemplateCrowdsale', accounts => {
     };
 
     const tokensForWei = async (weiAmount, crowdsale) => {
-        return (await getRate(weiAmount, crowdsale)).mul(weiAmount).mul(TOKEN_DECIMAL_MULTIPLIER).div(ETHER).floor();
+        return (await getRate(weiAmount, crowdsale)).mul(weiAmount).div(ETHER).floor();
     };
 
     beforeEach(async () => {

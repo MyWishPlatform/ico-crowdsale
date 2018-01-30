@@ -13,7 +13,7 @@ contract BonusableCrowdsale is usingConsts, Crowdsale {
 
         // calculate token amount to be created
         uint256 bonusRate = getBonusRate(weiAmount);
-        uint256 tokens = weiAmount.mul(bonusRate).mul(TOKEN_DECIMAL_MULTIPLIER).div(1 ether);
+        uint256 tokens = weiAmount.mul(bonusRate).div(1 ether);
 
         // update state
         weiRaised = weiRaised.add(weiAmount);
@@ -25,8 +25,7 @@ contract BonusableCrowdsale is usingConsts, Crowdsale {
     }
 
     function getBonusRate(uint256 weiAmount) internal returns (uint256) {
-        uint256 baseRate = D_RATE;
-        uint256 rate = baseRate;
+        uint256 bonusRate = rate;
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         // apply bonus for time & weiRaised
@@ -40,7 +39,7 @@ contract BonusableCrowdsale is usingConsts, Crowdsale {
             bool weiRaisedInBound = (weiRaisedStartsBoundaries[i] <= weiRaised) && (weiRaised < weiRaisedEndsBoundaries[i]);
             bool timeInBound = (timeStartsBoundaries[i] <= now) && (now < timeEndsBoundaries[i]);
             if (weiRaisedInBound && timeInBound) {
-                rate += rate * weiRaisedAndTimeRates[i] / 1000;
+                bonusRate += bonusRate * weiRaisedAndTimeRates[i] / 1000;
             }
         }
         //#endif
@@ -52,12 +51,12 @@ contract BonusableCrowdsale is usingConsts, Crowdsale {
 
         for (uint j = 0; j < D_WEI_AMOUNT_BONUS_COUNT; j++) {
             if (weiAmount >= weiAmountBoundaries[j]) {
-                rate += rate * weiAmountRates[j] / 1000;
+                bonusRate += bonusRate * weiAmountRates[j] / 1000;
                 break;
             }
         }
         //#endif
 
-        return rate;
+        return bonusRate;
     }
 }
