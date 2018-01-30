@@ -289,9 +289,9 @@ contract('TemplateCrowdsale', accounts => {
 
         // check transferable before end
         //#if D_PAUSE_TOKENS == true
-        await token.transfer(BUYER_1, await tokensForWei(wei, crowdsale)).should.eventually.be.rejected;
+        await token.transfer(BUYER_1, (await tokensForWei(wei, crowdsale)).div(2)).should.eventually.be.rejected;
         //#else
-        await token.transfer(BUYER_1, await tokensForWei(wei, crowdsale));
+        await token.transfer(BUYER_1, (await tokensForWei(wei, crowdsale)).div(2));
         //#endif
     });
 
