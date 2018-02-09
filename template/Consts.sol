@@ -8,7 +8,7 @@ contract usingConsts {
     string constant TOKEN_NAME = "D_NAME";
     string constant TOKEN_SYMBOL = "D_SYMBOL";
     bool constant PAUSED = D_PAUSE_TOKENS;
-    address constant TARGET_USER = D_COLD_WALLET;
+    address constant TARGET_USER = D_CONTRACTS_OWNER;
     uint constant START_TIME = D_START_TIME;
     bool constant CONTINUE_MINTING = D_CONTINUE_MINTING;
 }

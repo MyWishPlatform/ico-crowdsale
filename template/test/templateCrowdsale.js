@@ -13,7 +13,6 @@ const RefundVault = artifacts.require("./RefundVault.sol");
 const BASE_RATE = new web3.BigNumber("D_RATE");
 const SOFT_CAP_WEI = new web3.BigNumber("D_SOFT_CAP_WEI");
 const HARD_CAP_WEI = new web3.BigNumber("D_HARD_CAP_WEI");
-const COLD_WALLET = "D_COLD_WALLET";
 const START_TIME = D_START_TIME;
 const END_TIME = D_END_TIME;
 const TOKEN_DECIMAL_MULTIPLIER = new web3.BigNumber(10).toPower(D_DECIMALS);
@@ -72,8 +71,9 @@ contract('TemplateCrowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
     const BUYER_2 = accounts[2];
-    const RICH_MAN = accounts[3];
-    const TARGET_USER = accounts[4];
+    const BUYER_3 = accounts[3];
+    const COLD_WALLET = accounts[4];
+    const TARGET_USER = accounts[5];
 
     let snapshotId;
 
@@ -149,7 +149,8 @@ contract('TemplateCrowdsale', accounts => {
     });
 
     it('#0 3/4 precheck', async () => {
-        TARGET_USER.should.be.equals(COLD_WALLET, "it must be the same");
+        COLD_WALLET.should.be.equals("D_COLD_WALLET", "it must be the same");
+        TARGET_USER.should.be.equals("D_CONTRACTS_OWNER", "it must be the same");
     });
 
     it('#1 construct', async () => {
@@ -225,7 +226,7 @@ contract('TemplateCrowdsale', accounts => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
-        await crowdsale.sendTransaction({from: RICH_MAN, value: HARD_CAP_WEI});
+        await crowdsale.sendTransaction({from: BUYER_3, value: HARD_CAP_WEI});
 
         const moreOne = web3.toWei(1, 'ether');
         await crowdsale.sendTransaction({from: BUYER_1, value: moreOne}).should.eventually.be.rejected;
@@ -237,7 +238,7 @@ contract('TemplateCrowdsale', accounts => {
 
         const eth = HARD_CAP_WEI.add(web3.toWei(1, 'ether'));
 
-        await crowdsale.sendTransaction({from: RICH_MAN, value: eth}).should.eventually.be.rejected;
+        await crowdsale.sendTransaction({from: BUYER_3, value: eth}).should.eventually.be.rejected;
     });
 
     it('#8 check finish crowdsale after time', async () => {
@@ -301,7 +302,7 @@ contract('TemplateCrowdsale', accounts => {
         await increaseTime(START_TIME - NOW);
 
         // reach hard cap
-        await crowdsale.sendTransaction({from: RICH_MAN, value: HARD_CAP_WEI});
+        await crowdsale.sendTransaction({from: BUYER_3, value: HARD_CAP_WEI});
 
         // finalize
         await crowdsale.finalize({from: TARGET_USER});
@@ -366,7 +367,7 @@ contract('TemplateCrowdsale', accounts => {
 
         //#if defined(D_WEI_AMOUNT_BONUS_COUNT) && D_WEI_AMOUNT_BONUS_COUNT > 0
         for (let i = 0; i < weiAmountBoundaries.length; i++) {
-            await checkBuyTokensWithTimeIncreasing(RICH_MAN, weiAmountBoundaries[i], START_TIME);
+            await checkBuyTokensWithTimeIncreasing(BUYER_3, weiAmountBoundaries[i], START_TIME);
         }
         //#endif
     });
@@ -387,18 +388,18 @@ contract('TemplateCrowdsale', accounts => {
         await increaseTime(START_TIME - NOW);
 
         const eth = SOFT_CAP_WEI.div(2).floor();
-        await crowdsale.sendTransaction({from: RICH_MAN, value: eth});
+        await crowdsale.sendTransaction({from: BUYER_3, value: eth});
         await increaseTime(END_TIME - await getBlockchainTimestamp() + 1);
         await crowdsale.finalize({from: TARGET_USER});
 
-        const balanceBeforeRefund = await web3async(web3.eth, web3.eth.getBalance, RICH_MAN);
+        const balanceBeforeRefund = await web3async(web3.eth, web3.eth.getBalance, BUYER_3);
         const vault = RefundVault.at(await crowdsale.vault());
         const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
 
-        const refund = await crowdsale.claimRefund({from: RICH_MAN});
+        const refund = await crowdsale.claimRefund({from: BUYER_3});
         const gasUsed = new web3.BigNumber(refund.receipt.gasUsed).mul(GAS_PRICE);
 
-        const balanceAfterRefund = (await web3async(web3.eth, web3.eth.getBalance, RICH_MAN)).add(gasUsed);
+        const balanceAfterRefund = (await web3async(web3.eth, web3.eth.getBalance, BUYER_3)).add(gasUsed);
         const returnedFunds = balanceAfterRefund.sub(balanceBeforeRefund);
 
         returnedFunds.should.be.bignumber.equal(vaultBalance);

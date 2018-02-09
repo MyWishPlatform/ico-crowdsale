@@ -7,7 +7,7 @@ module.exports = {
         ganache: {
             network_id: "*",
             provider: ganache.provider({
-                accounts: [10**100, 10**100, 10**100, 10**100, 1].map(function (v) {
+                accounts: [10**100, 10**100, 10**100, 10**100, 0, 1].map(function (v) {
                     return {balance: v * ether};
                 }),
                 mnemonic: "mywish",
