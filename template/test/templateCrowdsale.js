@@ -149,6 +149,7 @@ contract('TemplateCrowdsale', accounts => {
     });
 
     it('#0 3/4 precheck', async () => {
+        OWNER.should.be.equals("D_MYWISH_ADDRESS", "it must be the same");
         COLD_WALLET.should.be.equals("D_COLD_WALLET", "it must be the same");
         TARGET_USER.should.be.equals("D_CONTRACTS_OWNER", "it must be the same");
     });
