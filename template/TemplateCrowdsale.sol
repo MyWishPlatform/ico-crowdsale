@@ -61,13 +61,6 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         return MintableToken(0);
     }
 
-    function finalization() internal {
-        super.finalization();
-        //#if "D_CONTINUE_MINTING" != "false"
-        token.transferOwnership(D_MYWISH_ADDRESS);
-        //#endif
-    }
-
     //#if "D_AUTO_FINALISE" != "false"
     /**
      * @dev Do inner check.

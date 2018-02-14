@@ -18,14 +18,15 @@ contract MainCrowdsale is usingConsts, FinalizableCrowdsale {
 
     function finalization() internal {
         super.finalization();
-        if (CONTINUE_MINTING) {
-            return;
-        }
 
         if (PAUSED) {
             MainToken(token).unpause();
         }
-        token.finishMinting();
+
+        if (!CONTINUE_MINTING) {
+            token.finishMinting();
+        }
+
         token.transferOwnership(TARGET_USER);
     }
 
