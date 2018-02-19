@@ -9,13 +9,6 @@ contract MainCrowdsale is usingConsts, FinalizableCrowdsale {
         return now >= startTime;
     }
 
-    /**
-     * @dev override token creation to integrate with MyWish token.
-     */
-    function createTokenContract() internal returns (MintableToken) {
-        return new MainToken();
-    }
-
     function finalization() internal {
         super.finalization();
 

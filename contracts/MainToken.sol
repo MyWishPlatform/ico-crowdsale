@@ -9,9 +9,6 @@ import "./Consts.sol";
 
 contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable {
     function MainToken() {
-        if (PAUSED) {
-            pause();
-        }
     }
 
     function name() constant public returns (string _name) {

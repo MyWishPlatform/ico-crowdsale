@@ -35,6 +35,10 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         require(!initialized);
         initialized = true;
 
+        if (PAUSED) {
+            MainToken(token).pause();
+        }
+
         //#if D_PREMINT_COUNT > 0
         address[D_PREMINT_COUNT] memory addresses = [D_PREMINT_ADDRESSES];
         uint[D_PREMINT_COUNT] memory amounts = [D_PREMINT_AMOUNTS];
