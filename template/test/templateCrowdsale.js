@@ -3,7 +3,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.use(require('chai-bignumber')(web3.BigNumber));
 chai.should();
-const {increaseTime, revert, snapshot, mine} = require('./evmMethods');
+const {timeTo, increaseTime, revert, snapshot, mine} = require('./evmMethods');
 const {web3async} = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
@@ -178,7 +178,8 @@ contract('TemplateCrowdsale', accounts => {
         hasStarted.should.be.equals(false, "hasStarted before timeshift");
         hasEnded.should.be.equals(false, "hasEnded before timeshift");
 
-        await increaseTime(END_TIME - NOW);
+        await timeTo(END_TIME + 1);
+        // await increaseTime(END_TIME - NOW);
 
         hasStarted = await crowdsale.hasStarted();
         hasEnded = await crowdsale.hasEnded();
@@ -329,7 +330,7 @@ contract('TemplateCrowdsale', accounts => {
 
             const crowdsale = await createCrowdsale();
             if (atTime) {
-                await increaseTime(atTime - NOW);
+                await timeTo(atTime);
             }
 
             const expectedTokens = await tokensForWei(weiAmount, crowdsale);
@@ -352,18 +353,21 @@ contract('TemplateCrowdsale', accounts => {
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         for (let i = 0; i < timeStartsBoundaries.length; i++) {
-            let wei = SOFT_CAP_WEI.div(2).floor();
-            //#if D_SOFT_CAP_WEI == 0
-            wei = HARD_CAP_WEI.div(2).floor();
-            //#endif
+            let wei = HARD_CAP_WEI.div(timeStartsBoundaries.length + 1).floor();
             await checkBuyTokensWithTimeIncreasing(BUYER_1, wei, timeStartsBoundaries[i]);
-            // await checkBuyTokensWithTimeIncreasing(BUYER_2)
         }
         //#endif
 
         //#if defined(D_WEI_AMOUNT_BONUS_COUNT) && D_WEI_AMOUNT_BONUS_COUNT > 0
         for (let i = 0; i < weiAmountBoundaries.length; i++) {
-            await checkBuyTokensWithTimeIncreasing(BUYER_3, weiAmountBoundaries[i], START_TIME);
+            let wei;
+            if (i + 1 !== weiAmountBoundaries.length) {
+                wei = weiAmountBoundaries[i + 1].sub(weiAmountBoundaries[i]);
+            }
+            else {
+                wei = weiAmountBoundaries[i] + 1;
+            }
+            await checkBuyTokensWithTimeIncreasing(BUYER_3, wei, START_TIME);
         }
         //#endif
     });
