@@ -360,12 +360,9 @@ contract('TemplateCrowdsale', accounts => {
 
         //#if defined(D_WEI_AMOUNT_BONUS_COUNT) && D_WEI_AMOUNT_BONUS_COUNT > 0
         for (let i = 0; i < weiAmountBoundaries.length; i++) {
-            let wei;
-            if (i + 1 !== weiAmountBoundaries.length) {
-                wei = weiAmountBoundaries[i].sub(weiAmountBoundaries[i + 1]);
-            }
-            else {
-                wei = weiAmountBoundaries[i] + 1;
+            let wei = weiAmountBoundaries[i];
+            if (wei.equals(0)) {
+                wei = 1;
             }
             await checkBuyTokensWithTimeIncreasing(BUYER_3, wei, START_TIME);
         }
