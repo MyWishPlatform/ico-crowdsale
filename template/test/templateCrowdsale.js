@@ -106,8 +106,8 @@ contract('TemplateCrowdsale', accounts => {
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         for (let i = 0; i < weiRaisedStartsBoundaries.length; i++) {
-            const weiRaisedInBound = weiRaisedStartsBoundaries[i].lte(weiRaised) && weiRaised.lte(weiRaisedEndsBoundaries[i]);
-            const timeInBound = timeStartsBoundaries[i].lte(now) && now.lte(timeEndsBoundaries[i]);
+            const weiRaisedInBound = weiRaisedStartsBoundaries[i].lte(weiRaised) && weiRaised.lt(weiRaisedEndsBoundaries[i]);
+            const timeInBound = timeStartsBoundaries[i].lte(now) && now.lt(timeEndsBoundaries[i]);
             if (weiRaisedInBound && timeInBound) {
                 rate = rate.add(rate.mul(weiRaisedAndTimeRates[i]).div(1000).floor());
             }
@@ -362,7 +362,7 @@ contract('TemplateCrowdsale', accounts => {
         for (let i = 0; i < weiAmountBoundaries.length; i++) {
             let wei;
             if (i + 1 !== weiAmountBoundaries.length) {
-                wei = weiAmountBoundaries[i + 1].sub(weiAmountBoundaries[i]);
+                wei = weiAmountBoundaries[i].sub(weiAmountBoundaries[i + 1]);
             }
             else {
                 wei = weiAmountBoundaries[i] + 1;
