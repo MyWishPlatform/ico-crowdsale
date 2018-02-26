@@ -1,40 +1,64 @@
 const fs = require('fs');
 
+const TOKEN_CONTRACT_NAME = 'MainToken';
+const CROWDSALE_CONTRACT_NAME = 'TemplateCrowdsale';
 const BUILD_CONTRACTS_DIR = './build/contracts/';
-const TOKEN_CONTRACT_ID = 1143;
-const CROWDSALE_CONTRACT_ID = 1350;
 const DESTINATION_DIR = './build/';
 
 const contracts = {};
-fs.readdirSync(BUILD_CONTRACTS_DIR).forEach(filename => {
-    const contract = require(BUILD_CONTRACTS_DIR + filename);
-    contracts[contract.ast.id] = contract;
-});
+let tokenContractId;
+let crowdsaleContractId;
 
 main();
 
 function main() {
-    toOneFile(TOKEN_CONTRACT_ID);
-    toOneFile(CROWDSALE_CONTRACT_ID);
+    loadContracts();
+    toOneFile(tokenContractId);
+    toOneFile(crowdsaleContractId);
+    console.info('')
+}
+
+function loadContracts() {
+    fs.readdirSync(BUILD_CONTRACTS_DIR).forEach(filename => {
+        const contract = require(BUILD_CONTRACTS_DIR + filename);
+        if (contract.contractName === TOKEN_CONTRACT_NAME) {
+            tokenContractId = contract.ast.id;
+        } else if (contract.contractName === CROWDSALE_CONTRACT_NAME) {
+            crowdsaleContractId = contract.ast.id;
+        }
+        contracts[contract.ast.id] = contract;
+    });
 }
 
 function toOneFile(contractId) {
     const contract = contracts[contractId];
-    const dependencies = getContractDependencies(contractId);
-    let sources = getSourcesWithoutImports(contractId);
-    dependencies.forEach(contractId => sources += getSourcesWithoutImportsAndPragma(contractId));
-    fs.writeFileSync(DESTINATION_DIR + contract.contractName + '.sol', sources);
+    const dependencies = getContractDependencies(contractId)
+        .filter((item, pos, array) => array.indexOf(item) === pos);
+    dependencies.push(contractId);
+
+    let sources = '';
+    if (dependencies.length > 0) {
+        sources += getSourcesWithoutImports(dependencies[0]);
+        for (let i = 1; i < dependencies.length; i++) {
+            sources += getSourcesWithoutImportsAndPragma(dependencies[i]);
+        }
+    }
+
+    const destFilename = DESTINATION_DIR + contract.contractName + '.sol';
+    fs.writeFileSync(destFilename, sources);
+    console.info('Success, filename: ', destFilename);
 }
 
 function getContractDependencies(contractId) {
     const dependencies = [];
-    contracts[contractId].ast.children
+    const currentContractDependencies = contracts[contractId].ast.children
         .filter(c => c.name === 'ImportDirective')
-        .map(c => c.attributes.SourceUnit)
-        .forEach(id => dependencies.push(id));
+        .map(c => c.attributes.SourceUnit);
 
-    dependencies.forEach(dep => dependencies.push(...getContractDependencies(dep)));
-    return Array.from(new Set(dependencies));
+    currentContractDependencies.forEach(id => dependencies.push(...getContractDependencies(id)));
+    dependencies.push(...currentContractDependencies);
+
+    return dependencies;
 }
 
 function getSourcesWithoutImports(contractId) {
