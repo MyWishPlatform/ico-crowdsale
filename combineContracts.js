@@ -15,7 +15,6 @@ function main() {
     loadContracts();
     toOneFile(tokenContractId);
     toOneFile(crowdsaleContractId);
-    console.info('')
 }
 
 function loadContracts() {
@@ -53,6 +52,13 @@ function getContractDependencies(contractId) {
     const dependencies = [];
     const currentContractDependencies = contracts[contractId].ast.children
         .filter(c => c.name === 'ImportDirective')
+        .filter(c => {
+            if (c.attributes.unitAlias !== "" || c.attributes.symbolAliases[0] !== null) {
+                console.info(c.attributes)
+                throw Error(contracts[contractId].contractName + " contains aliases");
+            }
+            return c;
+        })
         .map(c => c.attributes.SourceUnit);
 
     currentContractDependencies.forEach(id => dependencies.push(...getContractDependencies(id)));
@@ -68,4 +74,3 @@ function getSourcesWithoutImports(contractId) {
 function getSourcesWithoutImportsAndPragma(contractId) {
     return getSourcesWithoutImports(contractId).replace(/pragma .+?;/, '');
 }
-
