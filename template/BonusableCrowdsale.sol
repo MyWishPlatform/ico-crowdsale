@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "./Consts.sol";

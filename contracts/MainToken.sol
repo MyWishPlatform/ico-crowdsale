@@ -1,9 +1,8 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/token/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/BurnableToken.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
-import "zeppelin-solidity/contracts/token/TokenTimelock.sol";
 import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 

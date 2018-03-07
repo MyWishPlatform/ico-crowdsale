@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 contract usingConsts {
     uint constant TOKEN_DECIMALS = D_DECIMALS;

@@ -52,7 +52,7 @@ function toOneFile(contractId) {
 
 function getContractDependencies(contractId) {
     const dependencies = [];
-    const currentContractDependencies = contracts[contractId].ast.children
+    const currentContractDependencies = contracts[contractId].ast.nodes
         .filter(c => c.name === 'ImportDirective')
         .filter(c => {
             if (c.attributes.unitAlias !== "" || c.attributes.symbolAliases[0] !== null) {

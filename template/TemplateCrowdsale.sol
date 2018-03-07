@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/crowdsale/CappedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/RefundableCrowdsale.sol";

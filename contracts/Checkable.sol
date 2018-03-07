@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.20;
 
 contract Checkable {
     address private serviceAccount;
