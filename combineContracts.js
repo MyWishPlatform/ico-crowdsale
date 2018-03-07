@@ -1,9 +1,11 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
 
 const TOKEN_CONTRACT_NAME = 'MainToken';
 const CROWDSALE_CONTRACT_NAME = 'TemplateCrowdsale';
-const BUILD_CONTRACTS_DIR = './build/contracts/';
-const DESTINATION_DIR = './build/';
+const BUILD_CONTRACTS_DIR = __dirname + '/build/contracts/';
+const DESTINATION_DIR = __dirname + '/build/';
 
 const contracts = {};
 let tokenContractId;
@@ -54,7 +56,6 @@ function getContractDependencies(contractId) {
         .filter(c => c.name === 'ImportDirective')
         .filter(c => {
             if (c.attributes.unitAlias !== "" || c.attributes.symbolAliases[0] !== null) {
-                console.info(c.attributes)
                 throw Error(contracts[contractId].contractName + " contains aliases");
             }
             return c;
