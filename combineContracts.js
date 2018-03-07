@@ -4,8 +4,8 @@ const fs = require('fs');
 
 const TOKEN_CONTRACT_NAME = 'MainToken';
 const CROWDSALE_CONTRACT_NAME = 'TemplateCrowdsale';
-const BUILD_CONTRACTS_DIR = __dirname + '/build/contracts/';
-const DESTINATION_DIR = __dirname + '/build/';
+const BUILD_CONTRACTS_DIR = process.cwd() + '/build/contracts/';
+const DESTINATION_DIR = process.cwd() + '/build/';
 
 const contracts = {};
 let tokenContractId;
