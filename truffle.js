@@ -28,5 +28,9 @@ module.exports = {
             runs: 200
         }
     },
-    network: 'ganache'
+    network: 'ganache',
+    mocha: {
+        bail: true,
+        fullTrace: true,
+    }
 };
