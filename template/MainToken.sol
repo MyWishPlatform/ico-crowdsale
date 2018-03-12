@@ -8,7 +8,7 @@ import "./Consts.sol";
 import "./ERC223Token.sol";
 
 contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable
-    //#if "D_ERC" == 23
+    //#if "D_ERC" == 223
     , ERC223Token
     //#endif
 {
