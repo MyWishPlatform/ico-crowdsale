@@ -53,14 +53,14 @@ function toOneFile(contractId) {
 function getContractDependencies(contractId) {
     const dependencies = [];
     const currentContractDependencies = contracts[contractId].ast.nodes
-        .filter(c => c.name === 'ImportDirective')
+        .filter(c => c.nodeType === 'ImportDirective')
         .filter(c => {
-            if (c.attributes.unitAlias !== "" || c.attributes.symbolAliases[0] !== null) {
+            if (c.unitAlias !== "" || c.symbolAliases.length > 0) {
                 throw Error(contracts[contractId].contractName + " contains aliases");
             }
             return c;
         })
-        .map(c => c.attributes.SourceUnit);
+        .map(c => c.sourceUnit);
 
     currentContractDependencies.forEach(id => dependencies.push(...getContractDependencies(id)));
     dependencies.push(...currentContractDependencies);
