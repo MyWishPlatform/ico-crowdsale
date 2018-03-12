@@ -1,16 +1,15 @@
 pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
+import "zeppelin-solidity/contracts/token/BasicToken.sol";
 import './ERC223Basic.sol';
 import './ERC223Receiver.sol';
 
 /**
  * @title Reference implementation of the ERC223 standard token.
  */
-contract ERC223 is ERC223Basic {
+contract ERC223Token is ERC223Basic, BasicToken {
     using SafeMath for uint;
-
-    mapping(address => uint) balances; // List of user balances.
 
     /**
      * @dev Transfer the specified amount of tokens to the specified address.
@@ -29,7 +28,7 @@ contract ERC223 is ERC223Basic {
         uint codeLength;
 
         assembly {
-        // Retrieve the size of the code on target address, this needs assembly .
+            // Retrieve the size of the code on target address, this needs assembly.
             codeLength := extcodesize(_to)
         }
 
@@ -52,22 +51,8 @@ contract ERC223 is ERC223Basic {
      * @param _to    Receiver address.
      * @param _value Amount of tokens that will be transferred.
      */
-    function transfer(address _to, uint _value) public returns (bool) {
-        uint codeLength;
+    function transfer(address _to, uint256 _value) public returns (bool) {
         bytes memory empty;
-
-        assembly {
-        // Retrieve the size of the code on target address, this needs assembly .
-            codeLength := extcodesize(_to)
-        }
-
-        balances[msg.sender] = balances[msg.sender].sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        if(codeLength > 0) {
-            ERC223Receiver receiver = ERC223Receiver(_to);
-            receiver.tokenFallback(msg.sender, _value, empty);
-        }
-        Transfer(msg.sender, _to, _value, empty);
-        return true;
+        return transfer(_to, _value, empty);
     }
 }

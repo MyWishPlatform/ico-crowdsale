@@ -5,8 +5,13 @@ import "zeppelin-solidity/contracts/token/BurnableToken.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./FreezableMintableToken.sol";
 import "./Consts.sol";
+import "./ERC223Token.sol";
 
-contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable {
+contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable
+    //#if "D_ERC" == 23
+    , ERC223Token
+    //#endif
+{
     function MainToken() {
     }
 

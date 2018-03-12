@@ -4,5 +4,6 @@ build
 node_modules
 contracts/TemplateCrowdsale.sol
 contracts/BonusableCrowdsale.sol
+contracts/MainToken.sol
 contracts/Consts.sol
 test/templateCrowdsale.js
