@@ -2,10 +2,14 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 chai.should();
+
 const {increaseTime, revert, snapshot} = require('./evmMethods');
 const utils = require('./web3Utils');
 
 const Token = artifacts.require("./MainToken.sol");
+const SuccessfulERC223Receiver = artifacts.require("./SuccessfulERC223Receiver.sol");
+const FailingERC223Receiver = artifacts.require("./FailingERC223Receiver.sol");
+const ERC223ReceiverWithoutTokenFallback = artifacts.require("./ERC223ReceiverWithoutTokenFallback.sol");
 
 const DAY = 24 * 3600;
 
@@ -67,4 +71,43 @@ contract('Token', accounts => {
         await token.burn(tokensToMint + 1).should.eventually.be.rejected;
         await token.burn(tokensToMint / 2);
     });
+
+    //#if "D_ERC" == 23
+    it('#5 erc223 transfer to contract', async () => {
+        const token = await Token.deployed();
+        const receiver = await SuccessfulERC223Receiver.new();
+
+        const tokensToTransfer = web3.toWei(1, 'ether');
+        await token.mint(BUYER_1, tokensToTransfer);
+
+        await token.transfer(receiver.address, tokensToTransfer, {from: BUYER_1});
+
+        const balance = await token.balanceOf(receiver.address);
+        balance.toString().should.be.equals(tokensToTransfer.toString());
+    });
+
+    it('#6 erc223 transfer should fail on contract receiver with failing tokenFallback function', async () => {
+        const token = await Token.deployed();
+        const failingReceiver = await FailingERC223Receiver.new();
+
+        const tokensToTransfer = web3.toWei(1, 'wei');
+        await token.mint(BUYER_1, tokensToTransfer);
+
+        await token.transfer(failingReceiver.address, tokensToTransfer, {from: BUYER_1}).should.eventually.be.rejected;
+
+        (await token.balanceOf(failingReceiver.address)).should.be.zero;
+    });
+
+    it('#7 erc223 transfer should fail on contract without tokenFallback function', async () => {
+        const token = await Token.deployed();
+        const failingReceiver = await ERC223ReceiverWithoutTokenFallback.new();
+
+        const tokensToTransfer = web3.toWei(1, 'wei');
+        await token.mint(BUYER_1, tokensToTransfer);
+
+        await token.transfer(failingReceiver.address, tokensToTransfer, {from: BUYER_1}).should.eventually.be.rejected;
+
+        (await token.balanceOf(failingReceiver.address)).should.be.zero;
+    });
+    //#endif
 });

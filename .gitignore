@@ -7,3 +7,4 @@ contracts/BonusableCrowdsale.sol
 contracts/MainToken.sol
 contracts/Consts.sol
 test/templateCrowdsale.js
+test/mainToken.js
