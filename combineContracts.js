@@ -6,6 +6,9 @@ const CONTRACT_NAMES_TO_COMBINE = process.argv.slice(2);
 const BUILD_CONTRACTS_DIR = process.cwd() + '/build/contracts/';
 const DESTINATION_DIR = process.cwd() + '/build/';
 
+const PRAGMA_REGEX = /pragma .+?;/;
+const IMPORT_REGEX = /(import.+?;\s+)+/;
+
 const contracts = {};
 let contractIdsToCombine = [];
 
@@ -36,10 +39,12 @@ function toOneFile(contractId) {
 
     let sources = '';
     if (dependencies.length > 0) {
-        sources += getSourcesWithoutImports(dependencies[0]);
-        for (let i = 1; i < dependencies.length; i++) {
+        for (let i = 0; i < dependencies.length; i++) {
             sources += getSourcesWithoutImportsAndPragma(dependencies[i]);
         }
+
+        const pragma = contracts[contractId].source.match(PRAGMA_REGEX)[0];
+        sources = pragma + sources;
     }
 
     const destFilename = DESTINATION_DIR + contract.contractName + '.sol';
@@ -65,10 +70,8 @@ function getContractDependencies(contractId) {
     return dependencies;
 }
 
-function getSourcesWithoutImports(contractId) {
-    return contracts[contractId].source.replace(/(import.+?;\s+)+/, '');
-}
-
 function getSourcesWithoutImportsAndPragma(contractId) {
-    return getSourcesWithoutImports(contractId).replace(/pragma .+?;/, '');
+    return contracts[contractId].source
+        .replace(IMPORT_REGEX, '')
+        .replace(PRAGMA_REGEX, '');
 }
