@@ -1,5 +1,6 @@
 {
   "constants": {
+    "D_ONLY_TOKEN": false,
     "D_ERC": "ERC20",
     "D_START_TIME": 1507734000,
     "D_END_TIME": 1507820400,
