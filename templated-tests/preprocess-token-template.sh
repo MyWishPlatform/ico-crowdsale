@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+mkdir -p build/template
+echo "first pass"
+node node_modules/.bin/c-preprocessor --config pre-firstpass-config.json template/MainToken.sol build/template/MainToken.sol
+node node_modules/.bin/c-preprocessor --config pre-firstpass-config.json template/migrations/2_deploy_contracts.js build/template/2_deploy_contracts.js
+echo "second pass"
+node node_modules/.bin/c-preprocessor --config $1 template/Consts.sol contracts/Consts.sol
+node node_modules/.bin/c-preprocessor --config $1 build/template/MainToken.sol contracts/MainToken.sol
+node node_modules/.bin/c-preprocessor --config $1 build/template/2_deploy_contracts.js migrations/2_deploy_contracts.js

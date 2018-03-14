@@ -8,3 +8,4 @@ contracts/MainToken.sol
 contracts/Consts.sol
 test/templateCrowdsale.js
 test/mainToken.js
+migrations/2_deploy_contracts.js

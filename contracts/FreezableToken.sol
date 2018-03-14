@@ -13,6 +13,16 @@ contract FreezableToken is StandardToken {
     event Released(address indexed owner, uint amount);
 
     /**
+     * @dev Gets the balance of the specified address given the frozen tokens.
+     * @param _owner The address to query the the balance of.
+     * @return An uint256 representing the amount owned by the passed address.
+     */
+    function balanceOf(address _owner) public view returns (uint256 balance) {
+        var (freezedTokens, freezingCount) = getFreezingSummaryOf(_owner);
+        return balances[_owner].add(freezedTokens);
+    }
+
+    /**
      * @dev gets summary information about all freeze tokens for the specified address.
      * @param _addr Address of freeze tokens owner.
      */

@@ -81,4 +81,20 @@ contract('Token', accounts => {
         await increaseTime(HOUR * 3 + 1);
         await token.releaseAll({from: BUYER_1});
     });
+
+    it('#7 balanceOf freezed tokens', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        String(await token.balanceOf(BUYER_1)).should.be.equals(String(web3.toWei(3, 'ether')));
+
+        await token.mint(BUYER_1, web3.toWei(1, 'ether'));
+        String(await token.balanceOf(BUYER_1)).should.be.equals(String(web3.toWei(4, 'ether')));
+
+        await increaseTime(HOUR * 3 + 1);
+        await token.releaseAll({from: BUYER_1});
+        String(await token.balanceOf(BUYER_1)).should.be.equals(String(web3.toWei(4, 'ether')));
+    });
 });

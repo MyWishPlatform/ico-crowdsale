@@ -4,7 +4,7 @@ chai.use(chaiAsPromised);
 chai.use(require('chai-bignumber')(web3.BigNumber));
 chai.should();
 const {timeTo, increaseTime, revert, snapshot, mine} = require('./evmMethods');
-const {web3async} = require('./web3Utils');
+const {web3async, estimateConstructGas} = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 const Token = artifacts.require("./MainToken.sol");
@@ -136,6 +136,11 @@ contract('TemplateCrowdsale', accounts => {
 
     afterEach(async () => {
         await revert(snapshotId);
+    });
+
+    it('#0 gas usage', async () => {
+        await estimateConstructGas(Crowdsale)
+            .then(console.info);
     });
 
     it('#0 balances', () => {
