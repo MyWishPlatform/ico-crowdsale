@@ -1,0 +1,14 @@
+{
+  "constants": {
+    "D_ONLY_TOKEN": true,
+    "D_ERC": "ERC223",
+    "D_NAME": "MyWish Token",
+    "D_SYMBOL": "WISH",
+    "D_DECIMALS": 10,
+    "D_CONTINUE_MINTING": false,
+    "D_CONTRACTS_OWNER": "0x8ffff2c69f000c790809f6b8f9abfcbaab46b322",
+    "D_PAUSE_TOKENS": true,
+
+    "D_PREMINT_COUNT": 0
+  }
+}
