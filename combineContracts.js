@@ -2,31 +2,28 @@
 
 const fs = require('fs');
 
-const TOKEN_CONTRACT_NAME = 'MainToken';
-const CROWDSALE_CONTRACT_NAME = 'TemplateCrowdsale';
+const CONTRACT_NAMES_TO_COMBINE = process.argv.slice(2);
 const BUILD_CONTRACTS_DIR = process.cwd() + '/build/contracts/';
 const DESTINATION_DIR = process.cwd() + '/build/';
 
 const contracts = {};
-let tokenContractId;
-let crowdsaleContractId;
+let contractIdsToCombine = [];
 
 main();
 
 function main() {
     loadContracts();
-    toOneFile(tokenContractId);
-    toOneFile(crowdsaleContractId);
+    contractIdsToCombine.forEach(toOneFile);
 }
 
 function loadContracts() {
     fs.readdirSync(BUILD_CONTRACTS_DIR).forEach(filename => {
         const contract = require(BUILD_CONTRACTS_DIR + filename);
-        if (contract.contractName === TOKEN_CONTRACT_NAME) {
-            tokenContractId = contract.ast.id;
-        } else if (contract.contractName === CROWDSALE_CONTRACT_NAME) {
-            crowdsaleContractId = contract.ast.id;
+
+        if (CONTRACT_NAMES_TO_COMBINE.indexOf(contract.contractName) !== -1) {
+            contractIdsToCombine.push(contract.ast.id);
         }
+
         contracts[contract.ast.id] = contract;
     });
 }
