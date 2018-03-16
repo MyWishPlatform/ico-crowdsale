@@ -12,12 +12,18 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
      * @param _to Address to which token will be freeze.
      * @param _amount Amount of token to mint and freeze.
      * @param _until Release date, must be in future.
+     * @return A boolean that indicates if the operation was successful.
      */
-    function mintAndFreeze(address _to, uint _amount, uint64 _until) public onlyOwner {
+    function mintAndFreeze(address _to, uint _amount, uint64 _until) onlyOwner canMint public returns (bool) {
+        totalSupply = totalSupply.add(_amount);
+
         bytes32 currentKey = toKey(_to, _until);
-        mint(address(keccak256(currentKey)), _amount);
+        freezings[currentKey] = freezings[currentKey].add(_amount);
+        freezingBalance[_to] = freezingBalance[_to].add(_amount);
 
         freeze(_to, _until);
+        Mint(_to, _amount);
         Freezed(_to, _until, _amount);
+        return true;
     }
 }
