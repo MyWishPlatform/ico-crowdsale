@@ -67,6 +67,10 @@ const weiAmountRates = "D_WEI_AMOUNT_MILLIRATES".split(',')
 //#endif
 //#endif
 
+//#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+const MIN_VALUE_WEI = new web3.BigNumber("D_MIN_VALUE_WEI")
+//#endif
+
 contract('TemplateCrowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
@@ -407,4 +411,15 @@ contract('TemplateCrowdsale', accounts => {
         returnedFunds.should.be.bignumber.equal(vaultBalance);
     });
     //#endif
+
+    //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+    it('#15 check if minimal value not reached', async () => {
+        const crowdsale = await createCrowdsale();
+        await increaseTime(START_TIME - NOW);
+
+        const belowMin = MIN_VALUE_WEI.div(2).floor();
+        await crowdsale.sendTransaction({from: BUYER_1, value: belowMin}).should.eventually.be.rejected;
+    });
+    //#endif
+
 });
