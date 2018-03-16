@@ -65,7 +65,7 @@ contract FreezableToken is StandardToken {
      * @param _index Freezing portion index. It ordered by release date descending.
      */
     function getFreezing(address _addr, uint _index) public view returns (uint64 _release, uint _balance) {
-        for (uint i = 0; i < _index; i ++) {
+        for (uint i = 0; i < _index + 1; i ++) {
             _release = chains[toKey(_addr, _release)];
         }
         _balance = freezings[toKey(_addr, _release)];
