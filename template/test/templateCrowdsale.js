@@ -71,6 +71,10 @@ const weiAmountRates = "D_WEI_AMOUNT_MILLIRATES".split(',')
 const MIN_VALUE_WEI = new web3.BigNumber("D_MIN_VALUE_WEI")
 //#endif
 
+//#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+const MAX_VALUE_WEI = new web3.BigNumber("D_MAX_VALUE_WEI")
+//#endif
+
 contract('TemplateCrowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
@@ -422,4 +426,13 @@ contract('TemplateCrowdsale', accounts => {
     });
     //#endif
 
+    //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+    it('#16 check if max value exceeded', async () => {
+        const crowdsale = await createCrowdsale();
+        await increaseTime(START_TIME - NOW);
+
+        const aboveMax = MAX_VALUE_WEI.mul(1.5);
+        await crowdsale.sendTransaction({from: BUYER_1, value: aboveMax}).should.eventually.be.rejected;
+    });
+    //#endif
 });

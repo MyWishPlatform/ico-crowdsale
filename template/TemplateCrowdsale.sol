@@ -85,14 +85,27 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     }
     //#endif
 
-    //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+    //#if "D_MIN_VALUE_WEI" != 0 || "D_MAX_VALUE_WEI" != 0
     /**
      * @dev override purchase validation to add extra value logic.
      * @return true if sended more than minimal value
      */
     function validPurchase() internal view returns (bool) {
+        //#if defined(D_MIN_VALUE_WEI)
         bool minValue = msg.value >= D_MIN_VALUE_WEI;
-        return minValue && super.validPurchase();
+        //#endif
+        //#if defined(D_MAX_VALUE_WEI)
+        bool maxValue = msg.value <= D_MAX_VALUE_WEI;
+        //#endif
+
+        return
+        //#if defined(D_MIN_VALUE_WEI)
+            minValue &&
+        //#endif
+        //#if defined(D_MAX_VALUE_WEI)
+            maxValue &&
+        //#endif
+            super.validPurchase();
     }
     //#endif
 }
