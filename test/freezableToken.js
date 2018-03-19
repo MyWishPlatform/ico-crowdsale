@@ -82,7 +82,122 @@ contract('Token', accounts => {
         await token.releaseAll({from: BUYER_1});
     });
 
-    it('#7 balanceOf freezed tokens', async () => {
+    it('#7 freeze, release, freeze, releaseAll', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        await increaseTime(HOUR * 3 + 1);
+        await token.releaseOnce({from: BUYER_1});
+        (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
+
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
+
+        await increaseTime(HOUR);
+        await token.releaseAll({from: BUYER_1});
+
+        (await token.freezingCount(BUYER_1)).should.bignumber.be.zero;
+    });
+
+    it('#8 insert, release almost all, insert to begin, releaseOnce', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
+
+        await increaseTime(HOUR * 2 + 1);
+        await token.releaseAll({from: BUYER_1});
+        (await token.freezingCount(BUYER_1)).should.bignumber.equals(1);
+
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        await increaseTime(2 * HOUR);
+        await token.releaseOnce({from: BUYER_1});
+
+        (await token.freezingCount(BUYER_1)).should.bignumber.equals(1);
+    });
+
+    it('#9 insert to begin', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+
+        const freezing0 = await token.getFreezing(BUYER_1, 0);
+        freezing0[0].should.bignumber.equals(NOW + HOUR);
+        freezing0[1].should.bignumber.equals(web3.toWei(1, 'ether'));
+
+        const freezing1 = await token.getFreezing(BUYER_1, 1);
+        freezing1[0].should.bignumber.equals(NOW + HOUR * 2);
+        freezing1[1].should.bignumber.equals(web3.toWei(1, 'ether'));
+    });
+
+    it('#10 insert to begin and to end', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        (await token.getFreezing(BUYER_1, 0))[0].should.bignumber.equals(NOW + HOUR);
+        (await token.getFreezing(BUYER_1, 1))[0].should.bignumber.equals(NOW + HOUR * 2);
+        (await token.getFreezing(BUYER_1, 2))[0].should.bignumber.equals(NOW + HOUR * 3);
+    });
+
+    it('#11 insert to begin after release', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
+
+        await increaseTime(HOUR + 1);
+
+        await token.releaseOnce({from:BUYER_1});
+        (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
+
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+
+        (await token.getFreezing(BUYER_1, 0))[0].should.bignumber.equals(NOW + HOUR * 2);
+        (await token.getFreezing(BUYER_1, 1))[0].should.bignumber.equals(NOW + HOUR * 3);
+        (await token.getFreezing(BUYER_1, 2))[0].should.bignumber.equals(NOW + HOUR * 4);
+    });
+
+    it('#12 insert to end after release', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        await increaseTime(HOUR + 1);
+
+        await token.releaseOnce({from:BUYER_1});
+        (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
+
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
+
+        (await token.getFreezing(BUYER_1, 0))[0].should.bignumber.equals(NOW + HOUR * 2);
+        (await token.getFreezing(BUYER_1, 1))[0].should.bignumber.equals(NOW + HOUR * 3);
+        (await token.getFreezing(BUYER_1, 2))[0].should.bignumber.equals(NOW + HOUR * 4);
+    });
+
+    it('#13 insert to middle after release', async () => {
+        const token = await Token.new();
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
+
+        await increaseTime(HOUR + 1);
+
+        await token.releaseOnce({from:BUYER_1});
+        (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
+
+        await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
+
+        (await token.getFreezing(BUYER_1, 0))[0].should.bignumber.equals(NOW + HOUR * 2);
+        (await token.getFreezing(BUYER_1, 1))[0].should.bignumber.equals(NOW + HOUR * 3);
+        (await token.getFreezing(BUYER_1, 2))[0].should.bignumber.equals(NOW + HOUR * 4);
+    });
+
+    it('#14 balanceOf freezed tokens', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
