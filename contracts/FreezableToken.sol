@@ -58,6 +58,9 @@ contract FreezableToken is StandardToken {
     function getFreezing(address _addr, uint _index) public view returns (uint64 _release, uint _balance) {
         for (uint i = 0; i < _index + 1; i ++) {
             _release = chains[toKey(_addr, _release)];
+            if (_release == 0) {
+                return;
+            }
         }
         _balance = freezings[toKey(_addr, _release)];
     }
