@@ -4,11 +4,12 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/token/BasicToken.sol";
 import './ERC223Basic.sol';
 import './ERC223Receiver.sol';
+import './ERC223ReceiverImpl.sol';
 
 /**
  * @title Reference implementation of the ERC223 standard token.
  */
-contract ERC223Token is ERC223Basic, BasicToken {
+contract ERC223Token is ERC223Basic, BasicToken, FailingERC223Receiver {
     using SafeMath for uint;
 
     /**
