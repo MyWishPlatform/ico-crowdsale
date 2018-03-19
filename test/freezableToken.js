@@ -1,6 +1,8 @@
+const BigNumber = require('bignumber.js');
+
 const chai = require("chai");
-const chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
+chai.use(require("chai-bignumber")(BigNumber));
+chai.use(require("chai-as-promised"));
 chai.should();
 const {increaseTime, revert, snapshot} = require('./evmMethods');
 const utils = require('./web3Utils');
