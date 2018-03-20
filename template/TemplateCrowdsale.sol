@@ -6,7 +6,7 @@ import "./MainCrowdsale.sol";
 import "./Checkable.sol";
 import "./BonusableCrowdsale.sol";
 
-contract TemplateCrowdsale is usingConsts, MainCrowdsale
+contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if "D_BONUS_TOKENS" != "false"
     , BonusableCrowdsale
     //#endif
@@ -18,7 +18,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     , Checkable
     //#endif
 {
-    function TemplateCrowdsale(MintableToken _token)
+    function TemplateCrowdsale(MintableToken _token) public
         Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE * TOKEN_DECIMAL_MULTIPLIER, D_COLD_WALLET)
         CappedCrowdsale(D_HARD_CAP_WEI)
         //#if D_SOFT_CAP_WEI != 0

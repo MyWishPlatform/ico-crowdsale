@@ -7,7 +7,7 @@ import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 import "./ERC223Token.sol";
 
-contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausable
+contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     //#if "D_ERC" == "ERC223"
     , ERC223Token
     //#endif
@@ -15,14 +15,14 @@ contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausab
     event Initialized();
     bool public initialized = false;
 
-    function MainToken() {
+    function MainToken() public {
         init();
         //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
         transferOwnership(TARGET_USER);
         //#endif
     }
 
-    function init() private onlyOwner {
+    function init() private {
         require(!initialized);
         initialized = true;
 
@@ -53,24 +53,24 @@ contract MainToken is usingConsts, FreezableMintableToken, BurnableToken, Pausab
         Initialized();
     }
 
-    function name() constant public returns (string _name) {
+    function name() pure public returns (string _name) {
         return TOKEN_NAME;
     }
 
-    function symbol() constant public returns (string _symbol) {
+    function symbol() pure public returns (string _symbol) {
         return TOKEN_SYMBOL;
     }
 
-    function decimals() constant public returns (uint8 _decimals) {
+    function decimals() pure public returns (uint8 _decimals) {
         return TOKEN_DECIMALS_UINT8;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool _success) {
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool _success) {
         require(!paused);
         return super.transferFrom(_from, _to, _value);
     }
 
-    function transfer(address _to, uint256 _value) returns (bool _success) {
+    function transfer(address _to, uint256 _value) public returns (bool _success) {
         require(!paused);
         return super.transfer(_to, _value);
     }

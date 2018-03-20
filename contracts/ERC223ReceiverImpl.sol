@@ -5,13 +5,13 @@ import './ERC223Receiver.sol';
 contract SuccessfulERC223Receiver is ERC223Receiver {
     event Invoked(address from, uint value, bytes data);
 
-    function tokenFallback(address _from, uint _value, bytes _data) {
+    function tokenFallback(address _from, uint _value, bytes _data) public {
         Invoked(_from, _value, _data);
     }
 }
 
 contract FailingERC223Receiver is ERC223Receiver {
-    function tokenFallback(address _from, uint _value, bytes _data) {
+    function tokenFallback(address, uint, bytes) public {
         revert();
     }
 }

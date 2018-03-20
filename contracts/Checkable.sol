@@ -26,7 +26,7 @@ contract Checkable {
     /**
      * @dev Is caller (sender) service account.
      */
-    function isServiceAccount() constant public returns (bool) {
+    function isServiceAccount() view public returns (bool) {
         return msg.sender == serviceAccount;
     }
 

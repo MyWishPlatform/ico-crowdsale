@@ -1,6 +1,6 @@
 pragma solidity ^0.4.20;
 
-contract usingConsts {
+contract Consts {
     uint constant TOKEN_DECIMALS = D_DECIMALS;
     uint8 constant TOKEN_DECIMALS_UINT8 = D_DECIMALS;
     uint constant TOKEN_DECIMAL_MULTIPLIER = 10 ** TOKEN_DECIMALS;
