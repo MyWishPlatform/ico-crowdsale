@@ -7,6 +7,9 @@ const {increaseTime, revert, snapshot} = require('./evmMethods');
 const utils = require('./web3Utils');
 
 const Token = artifacts.require("./MainToken.sol");
+//#if !defined(D_ONLY_TOKEN) || D_ONLY_TOKEN != true
+const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
+//#endif
 const SuccessfulERC223Receiver = artifacts.require("./SuccessfulERC223Receiver.sol");
 const FailingERC223Receiver = artifacts.require("./FailingERC223Receiver.sol");
 const ERC223ReceiverWithoutTokenFallback = artifacts.require("./ERC223ReceiverWithoutTokenFallback.sol");
@@ -154,6 +157,11 @@ contract('Token', accounts => {
     //#if D_PREMINT_COUNT > 0
     it('#8 check initial freezes', async () => {
         const token = await Token.new();
+        //#if !defined(D_ONLY_TOKEN) || D_ONLY_TOKEN != true
+        const crowdsale = await Crowdsale.new(token.address);
+        await token.transferOwnership(crowdsale.address);
+        await crowdsale.init();
+        //#endif
 
         const map = {};
         for (let i = 0; i < premintAddresses.length; i++) {

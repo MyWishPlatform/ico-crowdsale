@@ -29,7 +29,6 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         //#endif
     {
         token = _token;
-        transferOwnership(TARGET_USER);
     }
 
     function init() public onlyOwner {
@@ -54,11 +53,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         }
         //#endif
 
-        //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
-        if (!CONTINUE_MINTING) {
-            MainToken(token).finishMinting();
-        }
-        //#endif
+        transferOwnership(TARGET_USER);
 
         Initialized();
     }
