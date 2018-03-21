@@ -1,10 +1,10 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/crowdsale/FinalizableCrowdsale.sol";
 import "./MainToken.sol";
 import "./Consts.sol";
 
-contract MainCrowdsale is usingConsts, FinalizableCrowdsale {
+contract MainCrowdsale is Consts, FinalizableCrowdsale {
     function hasStarted() public constant returns (bool) {
         return now >= startTime;
     }

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.20;
 
 contract Checkable {
     address private serviceAccount;
@@ -26,7 +26,7 @@ contract Checkable {
     /**
      * @dev Is caller (sender) service account.
      */
-    function isServiceAccount() constant public returns (bool) {
+    function isServiceAccount() view public returns (bool) {
         return msg.sender == serviceAccount;
     }
 

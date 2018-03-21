@@ -2,31 +2,31 @@
 
 const fs = require('fs');
 
-const TOKEN_CONTRACT_NAME = 'MainToken';
-const CROWDSALE_CONTRACT_NAME = 'TemplateCrowdsale';
+const CONTRACT_NAMES_TO_COMBINE = process.argv.slice(2);
 const BUILD_CONTRACTS_DIR = process.cwd() + '/build/contracts/';
 const DESTINATION_DIR = process.cwd() + '/build/';
 
+const PRAGMA_REGEX = /pragma .+?;/;
+const IMPORT_REGEX = /(import.+?;\s+)+/;
+
 const contracts = {};
-let tokenContractId;
-let crowdsaleContractId;
+let contractIdsToCombine = [];
 
 main();
 
 function main() {
     loadContracts();
-    toOneFile(tokenContractId);
-    toOneFile(crowdsaleContractId);
+    contractIdsToCombine.forEach(toOneFile);
 }
 
 function loadContracts() {
     fs.readdirSync(BUILD_CONTRACTS_DIR).forEach(filename => {
         const contract = require(BUILD_CONTRACTS_DIR + filename);
-        if (contract.contractName === TOKEN_CONTRACT_NAME) {
-            tokenContractId = contract.ast.id;
-        } else if (contract.contractName === CROWDSALE_CONTRACT_NAME) {
-            crowdsaleContractId = contract.ast.id;
+
+        if (CONTRACT_NAMES_TO_COMBINE.indexOf(contract.contractName) !== -1) {
+            contractIdsToCombine.push(contract.ast.id);
         }
+
         contracts[contract.ast.id] = contract;
     });
 }
@@ -39,10 +39,12 @@ function toOneFile(contractId) {
 
     let sources = '';
     if (dependencies.length > 0) {
-        sources += getSourcesWithoutImports(dependencies[0]);
-        for (let i = 1; i < dependencies.length; i++) {
+        for (let i = 0; i < dependencies.length; i++) {
             sources += getSourcesWithoutImportsAndPragma(dependencies[i]);
         }
+
+        const pragma = contracts[contractId].source.match(PRAGMA_REGEX)[0];
+        sources = pragma + sources;
     }
 
     const destFilename = DESTINATION_DIR + contract.contractName + '.sol';
@@ -52,15 +54,15 @@ function toOneFile(contractId) {
 
 function getContractDependencies(contractId) {
     const dependencies = [];
-    const currentContractDependencies = contracts[contractId].ast.children
-        .filter(c => c.name === 'ImportDirective')
+    const currentContractDependencies = contracts[contractId].ast.nodes
+        .filter(c => c.nodeType === 'ImportDirective')
         .filter(c => {
-            if (c.attributes.unitAlias !== "" || c.attributes.symbolAliases[0] !== null) {
+            if (c.unitAlias !== "" || c.symbolAliases.length > 0) {
                 throw Error(contracts[contractId].contractName + " contains aliases");
             }
             return c;
         })
-        .map(c => c.attributes.SourceUnit);
+        .map(c => c.sourceUnit);
 
     currentContractDependencies.forEach(id => dependencies.push(...getContractDependencies(id)));
     dependencies.push(...currentContractDependencies);
@@ -68,10 +70,8 @@ function getContractDependencies(contractId) {
     return dependencies;
 }
 
-function getSourcesWithoutImports(contractId) {
-    return contracts[contractId].source.replace(/(import.+?;\s+)+/, '');
-}
-
 function getSourcesWithoutImportsAndPragma(contractId) {
-    return getSourcesWithoutImports(contractId).replace(/pragma .+?;/, '');
+    return contracts[contractId].source
+        .replace(IMPORT_REGEX, '')
+        .replace(PRAGMA_REGEX, '');
 }

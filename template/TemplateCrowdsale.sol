@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/crowdsale/CappedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/RefundableCrowdsale.sol";
@@ -6,7 +6,7 @@ import "./MainCrowdsale.sol";
 import "./Checkable.sol";
 import "./BonusableCrowdsale.sol";
 
-contract TemplateCrowdsale is usingConsts, MainCrowdsale
+contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if "D_BONUS_TOKENS" != "false"
     , BonusableCrowdsale
     //#endif
@@ -21,7 +21,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
     event Initialized();
     bool public initialized = false;
 
-    function TemplateCrowdsale(MintableToken _token)
+    function TemplateCrowdsale(MintableToken _token) public
         Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE * TOKEN_DECIMAL_MULTIPLIER, D_COLD_WALLET)
         CappedCrowdsale(D_HARD_CAP_WEI)
         //#if D_SOFT_CAP_WEI != 0
@@ -29,6 +29,7 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         //#endif
     {
         token = _token;
+        transferOwnership(TARGET_USER);
     }
 
     function init() public onlyOwner {
@@ -44,17 +45,21 @@ contract TemplateCrowdsale is usingConsts, MainCrowdsale
         uint[D_PREMINT_COUNT] memory amounts = [D_PREMINT_AMOUNTS];
         uint64[D_PREMINT_COUNT] memory freezes = [D_PREMINT_FREEZES];
 
-        for (uint i = 0; i < addresses.length; i ++) {
+        for (uint i = 0; i < addresses.length; i++) {
             if (freezes[i] == 0) {
-                token.mint(addresses[i], amounts[i]);
-            }
-            else {
-                FreezableMintableToken(token).mintAndFreeze(addresses[i], amounts[i], freezes[i]);
+                MainToken(token).mint(addresses[i], amounts[i]);
+            } else {
+                MainToken(token).mintAndFreeze(addresses[i], amounts[i], freezes[i]);
             }
         }
         //#endif
 
-        transferOwnership(TARGET_USER);
+        //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
+        if (!CONTINUE_MINTING) {
+            MainToken(token).finishMinting();
+        }
+        //#endif
+
         Initialized();
     }
 

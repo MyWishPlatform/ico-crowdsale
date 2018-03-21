@@ -1,32 +1,53 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.20;
 
 
 import "zeppelin-solidity/contracts/token/StandardToken.sol";
 
 
 contract FreezableToken is StandardToken {
-    mapping (address => uint64) internal roots;
-
+    // freezing chains
     mapping (bytes32 => uint64) internal chains;
+    // freezing amounts for each chain
+    mapping (bytes32 => uint) internal freezings;
+    // total freezing balance per address
+    mapping (address => uint) internal freezingBalance;
 
     event Freezed(address indexed to, uint64 release, uint amount);
     event Released(address indexed owner, uint amount);
 
+
     /**
-     * @dev gets summary information about all freeze tokens for the specified address.
+     * @dev Gets the balance of the specified address include freezing tokens.
+     * @param _owner The address to query the the balance of.
+     * @return An uint256 representing the amount owned by the passed address.
+     */
+    function balanceOf(address _owner) public view returns (uint256 balance) {
+        return super.balanceOf(_owner) + freezingBalance[_owner];
+    }
+
+    /**
+     * @dev Gets the balance of the specified address without freezing tokens.
+     * @param _owner The address to query the the balance of.
+     * @return An uint256 representing the amount owned by the passed address.
+     */
+    function actualBalanceOf(address _owner) public view returns (uint256 balance) {
+        return super.balanceOf(_owner);
+    }
+
+    function freezingBalanceOf(address _owner) public view returns (uint256 balance) {
+        return freezingBalance[_owner];
+    }
+
+    /**
+     * @dev gets freezing count
      * @param _addr Address of freeze tokens owner.
      */
-    function getFreezingSummaryOf(address _addr) public constant returns (uint tokenAmount, uint freezingCount) {
-        uint count;
-        uint total;
-        uint64 release = roots[_addr];
+    function freezingCount(address _addr) public view returns (uint count) {
+        uint64 release = chains[toKey(_addr, 0)];
         while (release != 0) {
             count ++;
-            total += balanceOf(address(keccak256(toKey(_addr, release))));
             release = chains[toKey(_addr, release)];
         }
-
-        return (total, count);
     }
 
     /**
@@ -34,12 +55,14 @@ contract FreezableToken is StandardToken {
      * @param _addr Address of freeze tokens owner.
      * @param _index Freezing portion index. It ordered by release date descending.
      */
-    function getFreezing(address _addr, uint _index) public constant returns (uint64 _release, uint _balance) {
-        uint64 release = roots[_addr];
-        for (uint i = 0; i < _index; i ++) {
-            release = chains[toKey(_addr, release)];
+    function getFreezing(address _addr, uint _index) public view returns (uint64 _release, uint _balance) {
+        for (uint i = 0; i < _index + 1; i ++) {
+            _release = chains[toKey(_addr, _release)];
+            if (_release == 0) {
+                return;
+            }
         }
-        return (release, balanceOf(address(keccak256(toKey(_addr, release)))));
+        _balance = freezings[toKey(_addr, _release)];
     }
 
     /**
@@ -51,8 +74,14 @@ contract FreezableToken is StandardToken {
      * @param _until Release date, must be in future.
      */
     function freezeTo(address _to, uint _amount, uint64 _until) public {
+        require(_to != address(0));
+        require(_amount <= balances[msg.sender]);
+
+        balances[msg.sender] = balances[msg.sender].sub(_amount);
+
         bytes32 currentKey = toKey(_to, _until);
-        transfer(address(keccak256(currentKey)), _amount);
+        freezings[currentKey] = freezings[currentKey].add(_amount);
+        freezingBalance[_to] = freezingBalance[_to].add(_amount);
 
         freeze(_to, _until);
         Freezed(_to, _until, _amount);
@@ -62,24 +91,26 @@ contract FreezableToken is StandardToken {
      * @dev release first available freezing tokens.
      */
     function releaseOnce() public {
-        uint64 head = roots[msg.sender];
+        bytes32 headKey = toKey(msg.sender, 0);
+        uint64 head = chains[headKey];
         require(head != 0);
         require(uint64(block.timestamp) > head);
         bytes32 currentKey = toKey(msg.sender, head);
 
         uint64 next = chains[currentKey];
 
-        address currentAddress = address(keccak256(currentKey));
-        uint amount = balances[currentAddress];
-        delete balances[currentAddress];
+        uint amount = freezings[currentKey];
+        delete freezings[currentKey];
 
-        balances[msg.sender] += amount;
+        balances[msg.sender] = balances[msg.sender].add(amount);
+        freezingBalance[msg.sender] = freezingBalance[msg.sender].sub(amount);
 
         if (next == 0) {
-            delete roots[msg.sender];
+            delete chains[headKey];
         }
         else {
-            roots[msg.sender] = next;
+            chains[headKey] = next;
+            delete chains[currentKey];
         }
         Released(msg.sender, amount);
     }
@@ -99,7 +130,7 @@ contract FreezableToken is StandardToken {
         }
     }
 
-    function toKey(address _addr, uint _release) internal constant returns (bytes32 result) {
+    function toKey(address _addr, uint _release) internal pure returns (bytes32 result) {
         // WISH masc to increase entropy
         result = 0x5749534800000000000000000000000000000000000000000000000000000000;
         assembly {
@@ -110,38 +141,34 @@ contract FreezableToken is StandardToken {
 
     function freeze(address _to, uint64 _until) internal {
         require(_until > block.timestamp);
-        uint64 head = roots[_to];
+        bytes32 key = toKey(_to, _until);
+        bytes32 parentKey = toKey(_to, uint64(0));
+        uint64 next = chains[parentKey];
 
-        if (head == 0) {
-            roots[_to] = _until;
-            return;
-        }
-
-        bytes32 headKey = toKey(_to, head);
-        uint parent;
-        bytes32 parentKey;
-
-        while (head != 0 && _until > head) {
-            parent = head;
-            parentKey = headKey;
-
-            head = chains[headKey];
-            headKey = toKey(_to, head);
-        }
-
-        if (_until == head) {
-            return;
-        }
-
-        if (head != 0) {
-            chains[toKey(_to, _until)] = head;
-        }
-
-        if (parent == 0) {
-            roots[_to] = _until;
-        }
-        else {
+        if (next == 0) {
             chains[parentKey] = _until;
+            return;
         }
+
+        bytes32 nextKey = toKey(_to, next);
+        uint parent;
+
+        while (next != 0 && _until > next) {
+            parent = next;
+            parentKey = nextKey;
+
+            next = chains[nextKey];
+            nextKey = toKey(_to, next);
+        }
+
+        if (_until == next) {
+            return;
+        }
+
+        if (next != 0) {
+            chains[key] = next;
+        }
+
+        chains[parentKey] = _until;
     }
 }

@@ -1,9 +1,9 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.20;
 
 import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "./Consts.sol";
 
-contract BonusableCrowdsale is usingConsts, Crowdsale {
+contract BonusableCrowdsale is Consts, Crowdsale {
 
     function buyTokens(address beneficiary) public payable {
         require(beneficiary != address(0));
@@ -24,7 +24,7 @@ contract BonusableCrowdsale is usingConsts, Crowdsale {
         forwardFunds();
     }
 
-    function getBonusRate(uint256 weiAmount) internal returns (uint256) {
+    function getBonusRate(uint256 weiAmount) internal view returns (uint256) {
         uint256 bonusRate = rate;
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
