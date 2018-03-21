@@ -18,6 +18,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     , Checkable
     //#endif
 {
+    event Initialized();
+    bool public initialized = false;
+
     function TemplateCrowdsale(MintableToken _token) public
         Crowdsale(START_TIME > now ? START_TIME : now, D_END_TIME, D_RATE * TOKEN_DECIMAL_MULTIPLIER, D_COLD_WALLET)
         CappedCrowdsale(D_HARD_CAP_WEI)
@@ -27,6 +30,37 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     {
         token = _token;
         transferOwnership(TARGET_USER);
+    }
+
+    function init() public onlyOwner {
+        require(!initialized);
+        initialized = true;
+
+        if (PAUSED) {
+            MainToken(token).pause();
+        }
+
+        //#if D_PREMINT_COUNT > 0
+        address[D_PREMINT_COUNT] memory addresses = [D_PREMINT_ADDRESSES];
+        uint[D_PREMINT_COUNT] memory amounts = [D_PREMINT_AMOUNTS];
+        uint64[D_PREMINT_COUNT] memory freezes = [D_PREMINT_FREEZES];
+
+        for (uint i = 0; i < addresses.length; i++) {
+            if (freezes[i] == 0) {
+                MainToken(token).mint(addresses[i], amounts[i]);
+            } else {
+                MainToken(token).mintAndFreeze(addresses[i], amounts[i], freezes[i]);
+            }
+        }
+        //#endif
+
+        //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
+        if (!CONTINUE_MINTING) {
+            MainToken(token).finishMinting();
+        }
+        //#endif
+
+        Initialized();
     }
 
     /**

@@ -81,6 +81,7 @@ contract('TemplateCrowdsale', accounts => {
         const token = await Token.new();
         const crowdsale = await Crowdsale.new(token.address);
         await token.transferOwnership(crowdsale.address);
+        await crowdsale.init({from: TARGET_USER});
         return crowdsale;
     };
 

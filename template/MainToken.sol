@@ -12,14 +12,13 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     , ERC223Token
     //#endif
 {
+    //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
     event Initialized();
     bool public initialized = false;
 
     function MainToken() public {
         init();
-        //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
         transferOwnership(TARGET_USER);
-        //#endif
     }
 
     function init() private {
@@ -44,14 +43,13 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         }
         //#endif
 
-        //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
         if (!CONTINUE_MINTING) {
             finishMinting();
         }
-        //#endif
 
         Initialized();
     }
+    //#endif
 
     function name() pure public returns (string _name) {
         return TOKEN_NAME;
