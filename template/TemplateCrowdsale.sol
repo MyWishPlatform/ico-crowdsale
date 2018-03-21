@@ -85,27 +85,39 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     }
     //#endif
 
-    //#if "D_MIN_VALUE_WEI" != 0 || "D_MAX_VALUE_WEI" != 0
+    //#if defined(D_MIN_VALUE_WEI) || defined(D_MAX_VALUE_WEI)
     /**
      * @dev override purchase validation to add extra value logic.
      * @return true if sended more than minimal value
      */
     function validPurchase() internal view returns (bool) {
-        //#if defined(D_MIN_VALUE_WEI)
+        //#if defined(D_MIN_VALUE_WEI) && "D_MIN_VALUE_WEI" != 0
         bool minValue = msg.value >= D_MIN_VALUE_WEI;
         //#endif
-        //#if defined(D_MAX_VALUE_WEI)
+        //#if defined(D_MAX_VALUE_WEI) && "D_MAX_VALUE_WEI" != 0
         bool maxValue = msg.value <= D_MAX_VALUE_WEI;
         //#endif
 
         return
-        //#if defined(D_MIN_VALUE_WEI)
+        //#if defined(D_MIN_VALUE_WEI) && "D_MIN_VALUE_WEI" != 0
             minValue &&
         //#endif
-        //#if defined(D_MAX_VALUE_WEI)
+        //#if defined(D_MAX_VALUE_WEI) && "D_MAX_VALUE_WEI" != 0
             maxValue &&
         //#endif
             super.validPurchase();
     }
     //#endif
+
+    //#if defined(D_MIN_VALUE_WEI)
+    /**
+     * @dev override hasEnded to add minimal value logic
+     * @return true if remained to achieve less than minimal
+     */
+    function hasEnded() public view returns (bool) {
+        bool remainValue = cap.sub(weiRaised) < D_MIN_VALUE_WEI;
+        return super.hasEnded() || remainValue;
+    }
+    //#endif
+
 }

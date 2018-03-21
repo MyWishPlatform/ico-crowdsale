@@ -424,10 +424,22 @@ contract('TemplateCrowdsale', accounts => {
         const belowMin = MIN_VALUE_WEI.div(2).floor();
         await crowdsale.sendTransaction({from: BUYER_1, value: belowMin}).should.eventually.be.rejected;
     });
+
+    it('#16 check finish crowdsale because less than minvalue remain', async () => {
+        const crowdsale = await createCrowdsale();
+        const token = Token.at(await crowdsale.token());
+        await increaseTime(START_TIME - NOW);
+
+        const wei = HARD_CAP_WEI.sub(MIN_VALUE_WEI.div(2).floor());
+        await crowdsale.sendTransaction({from: BUYER_3, value: wei});
+        await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI}).should.eventually.be.rejected;
+
+        await crowdsale.finalize({from: TARGET_USER});
+    });
     //#endif
 
     //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-    it('#16 check if max value exceeded', async () => {
+    it('#17 check if max value exceeded', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
@@ -435,4 +447,5 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.sendTransaction({from: BUYER_1, value: aboveMax}).should.eventually.be.rejected;
     });
     //#endif
+
 });
