@@ -84,4 +84,18 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         isFinalized = true;
     }
     //#endif
+
+
+    function JouleInvokation(/* uint gasLimit, uint gasPrice */) public {
+
+        JouleAPI joule = JouleAPI(/* address of joule */);
+        uint times = now + 5 minutes;
+        uint gasLimit = 3999999;
+        uint gasPrice = 30000000000;
+        price = joule.getPrice(gasLimit, gasPrice);
+        joule.register.value(price)(address(this), times, gasLimit, gasPrice);
+    }
+
+    function check() public {
+    }
 }
