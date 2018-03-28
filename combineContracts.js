@@ -6,7 +6,7 @@ const CONTRACT_NAMES_TO_COMBINE = process.argv.slice(2);
 const BUILD_CONTRACTS_DIR = process.cwd() + '/build/contracts/';
 const DESTINATION_DIR = process.cwd() + '/build/';
 
-const DESCRIPTION = fs.readFileSync('./description.txt', 'utf8');
+const DESCRIPTION = fs.readFileSync(process.cwd() + '/description.txt', 'utf8');
 const PRAGMA_REGEX = /pragma .+?;/;
 const IMPORT_REGEX = /(import.+?;\s+)+/;
 
