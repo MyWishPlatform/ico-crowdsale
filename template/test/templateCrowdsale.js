@@ -552,7 +552,7 @@ contract('TemplateCrowdsale', accounts => {
         };
 
         const remainAfterMin = remainWei.sub(MIN_VALUE_WEI.mul(j));
-        if (remainAfterMin.gt(MIN_VALUE_WEI.mul(1.5))) {
+        if (remainAfterMin.gte(MIN_VALUE_WEI.mul(1.5))) {
         await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI.mul(1.5)});
         };
 
