@@ -6,6 +6,7 @@ const CONTRACT_NAMES_TO_COMBINE = process.argv.slice(2);
 const BUILD_CONTRACTS_DIR = process.cwd() + '/build/contracts/';
 const DESTINATION_DIR = process.cwd() + '/build/';
 
+const DESCRIPTION = fs.readFileSync('./description.txt', 'utf8');
 const PRAGMA_REGEX = /pragma .+?;/;
 const IMPORT_REGEX = /(import.+?;\s+)+/;
 
@@ -44,7 +45,7 @@ function toOneFile(contractId) {
         }
 
         const pragma = contracts[contractId].source.match(PRAGMA_REGEX)[0];
-        sources = pragma + sources;
+        sources = DESCRIPTION + pragma + sources;
     }
 
     const destFilename = DESTINATION_DIR + contract.contractName + '.sol';
