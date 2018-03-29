@@ -67,6 +67,14 @@ const weiAmountRates = "D_WEI_AMOUNT_MILLIRATES".split(',')
 //#endif
 //#endif
 
+//#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+const MIN_VALUE_WEI = new web3.BigNumber("D_MIN_VALUE_WEI")
+//#endif
+
+//#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+const MAX_VALUE_WEI = new web3.BigNumber("D_MAX_VALUE_WEI")
+//#endif
+
 contract('TemplateCrowdsale', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
@@ -197,10 +205,20 @@ contract('TemplateCrowdsale', accounts => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
+
         let wei = SOFT_CAP_WEI.div(2).floor();
         //#if D_SOFT_CAP_WEI == 0
         wei = HARD_CAP_WEI.div(2).floor();
         //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(new web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = new web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
         const expectedTokens = await tokensForWei(wei, crowdsale);
 
         const coldWalletSourceBalance = await web3async(web3.eth, web3.eth.getBalance, COLD_WALLET);
@@ -226,6 +244,13 @@ contract('TemplateCrowdsale', accounts => {
         //#if D_SOFT_CAP_WEI == 0
         wei = HARD_CAP_WEI.div(2).floor();
         //#endif
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(new web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = new web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
         await crowdsale.sendTransaction({from: BUYER_1, value: wei}).should.eventually.be.rejected;
     });
 
@@ -233,12 +258,36 @@ contract('TemplateCrowdsale', accounts => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
-        await crowdsale.sendTransaction({from: BUYER_3, value: HARD_CAP_WEI});
+        let wei = HARD_CAP_WEI;
 
+        //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = MAX_VALUE_WEI;
+        for (var i = 0; i < HARD_CAP_WEI.div(wei).floor(); i++) {
+            await crowdsale.sendTransaction({from: BUYER_3, value: wei});
+        };
+
+        //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        const remainWei = HARD_CAP_WEI.sub(MAX_VALUE_WEI.mul(i));
+        for (j = 0; j < remainWei.div(MIN_VALUE_WEI).floor(); j++) {
+            await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI});
+        };
+        const moreOne = MIN_VALUE_WEI;
+        //#else
+        const remainAfterMax = HARD_CAP_WEI.sub(wei.mul(i)); 
+        if (!remainAfterMax.isZero()) {
+        await crowdsale.sendTransaction({from: BUYER_3, value: remainAfterMax});
+        };
+        const moreOne = wei;
+        //#endif
+
+        //#else
+        await crowdsale.sendTransaction({from: BUYER_3, value: wei});
         const moreOne = web3.toWei(1, 'ether');
+        //#endif
         await crowdsale.sendTransaction({from: BUYER_1, value: moreOne}).should.eventually.be.rejected;
     });
 
+//#if defined(D_MAX_VALUE_WEI) && (D_MAX_VALUE_WEI > D_HARD_CAP_WEI)
     it('#7 check buy more hardCap', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
@@ -247,6 +296,7 @@ contract('TemplateCrowdsale', accounts => {
 
         await crowdsale.sendTransaction({from: BUYER_3, value: eth}).should.eventually.be.rejected;
     });
+//#endif
 
     it('#8 check finish crowdsale after time', async () => {
         const crowdsale = await createCrowdsale();
@@ -257,6 +307,15 @@ contract('TemplateCrowdsale', accounts => {
         //#if D_SOFT_CAP_WEI == 0
         wei = HARD_CAP_WEI.div(2).floor();
         //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(new web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = new web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
         // send some tokens
         await crowdsale.send(wei);
 
@@ -292,6 +351,15 @@ contract('TemplateCrowdsale', accounts => {
         //#if D_SOFT_CAP_WEI == 0
         wei = HARD_CAP_WEI.div(2).floor();
         //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(new web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = new web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
         await crowdsale.send(wei);
 
         // check transferable before end
@@ -307,8 +375,29 @@ contract('TemplateCrowdsale', accounts => {
         const token = Token.at(await crowdsale.token());
         await increaseTime(START_TIME - NOW);
 
+        let wei = HARD_CAP_WEI;
+
         // reach hard cap
-        await crowdsale.sendTransaction({from: BUYER_3, value: HARD_CAP_WEI});
+
+        //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        for (var i = 0; i < HARD_CAP_WEI.div(MAX_VALUE_WEI).floor(); i++) {
+            await crowdsale.sendTransaction({from: BUYER_3, value: MAX_VALUE_WEI});
+        };
+
+        //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        const remainWei = HARD_CAP_WEI.sub(MAX_VALUE_WEI.mul(i));
+        for (var j = 0; j < remainWei.div(MIN_VALUE_WEI).floor(); j++) {
+            await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI});
+        };
+        //#else
+        const remainAfterMax = HARD_CAP_WEI.sub(wei.mul(i)); 
+        if (!remainAfterMax.isZero()) {
+        await crowdsale.sendTransaction({from: BUYER_3, value: remainAfterMax});
+        };
+        //#endif
+        //#else
+        await crowdsale.sendTransaction({from: BUYER_3, value: wei});
+        //#endif
 
         // finalize
         await crowdsale.finalize({from: TARGET_USER});
@@ -323,6 +412,14 @@ contract('TemplateCrowdsale', accounts => {
         //#if D_SOFT_CAP_WEI == 0
         wei = HARD_CAP_WEI.div(2).floor();
         //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(new web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = new web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
         await crowdsale.send(wei).should.eventually.be.rejected;
     });
 
@@ -330,6 +427,15 @@ contract('TemplateCrowdsale', accounts => {
     it('#12 check buy tokens with bonuses', async () => {
         const checkBuyTokensWithTimeIncreasing = async (buyer, weiAmount, atTime) => {
             weiAmount = new web3.BigNumber(weiAmount);
+
+            //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+            weiAmount = new web3.BigNumber.max(new web3.BigNumber.min(weiAmount, MAX_VALUE_WEI), MIN_VALUE_WEI);
+            //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+            weiAmount = new web3.BigNumber.min(weiAmount, MAX_VALUE_WEI);
+            //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+            weiAmount = new web3.BigNumber.min(weiAmount, MIN_VALUE_WEI);
+            //#endif
+
             await revert(snapshotId);
             snapshotId = (await snapshot()).result;
 
@@ -385,12 +491,23 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.claimRefund().should.eventually.be.rejected;
     });
 
+    //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI < D_SOFT_CAP_WEI
     it('#14 check success refund', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
 
-        const eth = SOFT_CAP_WEI.div(2).floor();
-        await crowdsale.sendTransaction({from: BUYER_3, value: eth});
+        let wei = SOFT_CAP_WEI.div(2).floor();
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(new web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = new web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = new web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
+
+        await crowdsale.sendTransaction({from: BUYER_3, value: wei});
         await increaseTime(END_TIME - await getBlockchainTimestamp() + 1);
         await crowdsale.finalize({from: TARGET_USER});
 
@@ -407,4 +524,55 @@ contract('TemplateCrowdsale', accounts => {
         returnedFunds.should.be.bignumber.equal(vaultBalance);
     });
     //#endif
+    //#endif
+
+    //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+    it('#15 check if minimal value not reached', async () => {
+        const crowdsale = await createCrowdsale();
+        await increaseTime(START_TIME - NOW);
+
+        const belowMin = MIN_VALUE_WEI.div(2).floor();
+        await crowdsale.sendTransaction({from: BUYER_1, value: belowMin}).should.eventually.be.rejected;
+    });
+
+    it('#16 check finish crowdsale because less than minvalue remain', async () => {
+        const crowdsale = await createCrowdsale();
+        const token = Token.at(await crowdsale.token());
+        await increaseTime(START_TIME - NOW);
+
+        let wei = HARD_CAP_WEI.sub(MIN_VALUE_WEI.div(2).floor());
+        //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        for (var i = 0; i < HARD_CAP_WEI.div(MAX_VALUE_WEI).floor(); i++) {
+            await crowdsale.sendTransaction({from: BUYER_3, value: MAX_VALUE_WEI});
+        };
+
+        const remainWei = HARD_CAP_WEI.sub(MAX_VALUE_WEI.mul(i));
+        for (var j = 0; j < (remainWei.div(MIN_VALUE_WEI).floor()).sub(2); j++) {
+            await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI});
+        };
+
+        const remainAfterMin = remainWei.sub(MIN_VALUE_WEI.mul(j));
+        if (remainAfterMin.gte(MIN_VALUE_WEI.mul(1.5))) {
+        await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI.mul(1.5)});
+        };
+
+
+        await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI}).should.eventually.be.rejected;
+        //#else
+        await crowdsale.sendTransaction({from: BUYER_3, value: wei});
+        await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI}).should.eventually.be.rejected;
+        //#endif
+    });
+    //#endif
+
+    //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+    it('#17 check if max value exceeded', async () => {
+        const crowdsale = await createCrowdsale();
+        await increaseTime(START_TIME - NOW);
+
+        const aboveMax = MAX_VALUE_WEI.mul(1.5);
+        await crowdsale.sendTransaction({from: BUYER_1, value: aboveMax}).should.eventually.be.rejected;
+    });
+    //#endif
+
 });
