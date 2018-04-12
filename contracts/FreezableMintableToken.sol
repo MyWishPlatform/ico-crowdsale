@@ -24,6 +24,7 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
         freeze(_to, _until);
         Mint(_to, _amount);
         Freezed(_to, _until, _amount);
+        Transfer(msg.sender, _to, _value);
         return true;
     }
 }

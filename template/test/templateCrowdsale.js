@@ -254,6 +254,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.sendTransaction({from: BUYER_1, value: wei}).should.eventually.be.rejected;
     });
 
+    //#if !defined(D_MAX_VALUE_WEI) || ((defined(D_MAX_VALUE_WEI) && (D_HARD_CAP_WEI/D_MAX_VALUE_WEI) < 1000))
     it('#6 check hard cap', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
@@ -280,6 +281,7 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
         await crowdsale.hasEnded().should.eventually.be.true;
     });
+    //#endif
 
     //#if defined(D_MAX_VALUE_WEI) && (D_MAX_VALUE_WEI > D_HARD_CAP_WEI)
     it('#7 check buy more hardCap', async () => {
@@ -364,6 +366,8 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
     });
 
+
+    //#if !defined(D_MAX_VALUE_WEI) || ((defined(D_MAX_VALUE_WEI) && (D_HARD_CAP_WEI/D_MAX_VALUE_WEI) < 1000))
     it('#10 check finish crowdsale because hardcap', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
@@ -395,6 +399,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.finalize({from: TARGET_USER});
         await token.owner().should.eventually.be.equals(TARGET_USER, 'token owner must be TARGET_USER, not OWNER');
     });
+    //#endif
 
     it('#11 check finish crowdsale because time', async () => {
         const crowdsale = await createCrowdsale();
@@ -526,6 +531,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.sendTransaction({from: BUYER_1, value: belowMin}).should.eventually.be.rejected;
     });
 
+    //#if !defined(D_MAX_VALUE_WEI) || ((defined(D_MAX_VALUE_WEI) && (D_HARD_CAP_WEI/D_MAX_VALUE_WEI) < 1000))
     it('#16 check finish crowdsale because less than minvalue remain', async () => {
         const crowdsale = await createCrowdsale();
         await increaseTime(START_TIME - NOW);
@@ -550,6 +556,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.sendTransaction({from: BUYER_3, value: MIN_VALUE_WEI}).should.eventually.be.rejected;
         await crowdsale.finalize({from: TARGET_USER});
     });
+    //#endif
     //#endif
 
     //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
