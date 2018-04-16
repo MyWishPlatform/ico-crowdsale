@@ -7,8 +7,14 @@ contract Checkable {
      */
     bool private triggered = false;
 
-    // Occurs when accident happened.
+    /**
+     * Occurs when accident happened.
+     */
     event Triggered(uint balance);
+    /**
+     * Occurs when check finished.
+     */
+    event Checked(bool isAccident);
 
     function Checkable() public {
         serviceAccount = msg.sender;
