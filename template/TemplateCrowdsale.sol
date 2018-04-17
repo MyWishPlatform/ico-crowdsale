@@ -71,8 +71,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      * @return bool true of accident triggered, false otherwise.
      */
     function internalCheck() internal returns (bool) {
-        Checked();
-        return !isFinalized && hasEnded();
+        bool result = !isFinalized && hasEnded();
+        Checked(result);
+        return result;
     }
 
     /**
