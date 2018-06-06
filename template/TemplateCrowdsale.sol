@@ -122,4 +122,49 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     }
     //#endif
 
+    //#if D_CAN_CHANGE_START_TIME == true
+    function setStartTime(uint _startTime) public onlyOwner {
+        // only if CS was not started
+        require(now < startTime);
+        // only move time to future
+        require(_startTime > startTime);
+        require(_startTime < endTime);
+        startTime = _startTime;
+    }
+    //#endif
+
+    //#if D_CAN_CHANGE_END_TIME == true
+    function setEndTime(uint _endTime) public onlyOwner {
+        // only if CS was not ended
+        require(now < endTime);
+        // only if new end time in future
+        require(now < _endTime);
+        require(_endTime > startTime);
+        endTime = _endTime;
+    }
+    //#endif
+
+    //#if D_CAN_CHANGE_START_TIME == true && D_CAN_CHANGE_END_TIME == true
+    function setTimes(uint _startTime, uint _endTime) public onlyOwner {
+        require(_endTime > _startTime);
+        if (_startTime != startTime) {
+            require(_startTime > now);
+            // only if CS was not started
+            require(now < startTime);
+            // only move time to future
+            require(_startTime > startTime);
+
+            startTime = _startTime;
+        }
+        if (_endTime != endTime) {
+            // only if CS was not ended
+            require(now < endTime);
+            // end time in future
+            require(now < _endTime);
+
+            endTime = _endTime;
+        }
+    }
+    //#endif
+
 }

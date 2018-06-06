@@ -569,4 +569,123 @@ contract('TemplateCrowdsale', accounts => {
     });
     //#endif
 
+    //#if D_CAN_CHANGE_END_TIME == true
+    it('#18 check set end time', async () => {
+        const crowdsale = await createCrowdsale();
+        // const oldEndTime = await crowdsale.endTime();
+        const NEW_END_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+
+        await crowdsale.setEndTime(NEW_END_TIME, {from: TARGET_USER});
+        const newEndTime = await crowdsale.endTime();
+        newEndTime.should.be.equals(NEW_END_TIME, "end time was not changed");
+
+        // set end time by other
+        await crowdsale.setEndTime(NEW_END_TIME - 1).should.eventually.be.rejected;
+        // set end time less then start
+        await crowdsale.setEndTime(START_TIME - 1, {from: TARGET_USER}).should.eventually.be.rejected;
+
+        // move till ended
+        await increaseTime(NEW_END_TIME - NOW + 1);
+        const hasEnded = await crowdsale.hasEnded();
+        hasEnded.should.be.equals(true, "hasEnded must be true, time shifted to new end time");
+    });
+
+    it('#19 check set end time at wrong time', async () => {
+        const crowdsale = await createCrowdsale();
+        // const oldEndTime = await crowdsale.endTime();
+        const NEW_END_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+
+        // move till started
+        await increaseTime(START_TIME - NOW + 1);
+
+        await crowdsale.setEndTime(NEW_END_TIME, {from: TARGET_USER});
+        const newEndTime = await crowdsale.endTime();
+        newEndTime.should.be.equals(NEW_END_TIME, "end time was not changed");
+
+        // move till ended
+        await increaseTime(NEW_END_TIME - START_TIME + 1);
+
+        // impossible to change end time, because already ended
+        await crowdsale.setEndTime(NEW_END_TIME + 2).should.eventually.be.rejected;
+    });
+
+    it('#20 check set wrong end time', async () => {
+        const crowdsale = await createCrowdsale();
+        // const oldEndTime = await crowdsale.endTime();
+        const MIDDLE_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+
+        // move till new end time will be in the past
+        await timeTo(MIDDLE_TIME);
+
+        // end time in the past
+        await crowdsale.setEndTime(MIDDLE_TIME).should.eventually.be.rejected;
+    });
+    //#endif
+
+    //#if D_CAN_CHANGE_START_TIME == true
+    it('#21 check set start time', async () => {
+        const crowdsale = await createCrowdsale();
+        const NEW_START_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+
+        await crowdsale.setStartTime(NEW_START_TIME);
+        const newStartTime = await crowdsale.startTime();
+        newStartTime.should.be.equals(NEW_START_TIME, "start time was not changed");
+
+        // set start time by other
+        await crowdsale.setStartTime(NEW_START_TIME + 1, {from: BUYER_1}).should.eventually.be.rejected;
+        // set start time grate then end
+        await crowdsale.setStartTime(END_TIME + 1).should.eventually.be.rejected;
+
+        // move when already started
+        await increaseTime(NEW_START_TIME - NOW + 1);
+        const hasStarted = await crowdsale.hasStarted();
+        hasStarted.should.be.equals(true, "hasStarted must be true, time shifted to new start time");
+    });
+
+    it('#22 check set start time at wrong time', async () => {
+        const crowdsale = await createCrowdsale();
+
+        // move till started
+        await timeTo(START_TIME + 1);
+
+        const NEW_START_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+
+        await crowdsale.setStartTime(NEW_START_TIME).should.eventually.be.rejected;
+
+        // move till ended
+        await timeTo(END_TIME + 1);
+
+        // impossible to change start time, because already ended
+        await crowdsale.setStartTime(END_TIME + 10).should.eventually.be.rejected;
+    });
+
+    it('#23 check set wrong start time', async () => {
+        const crowdsale = await createCrowdsale();
+        // after the end
+        const NEW_START_TIME = END_TIME + 1;
+
+        await crowdsale.setStartTime(NEW_START_TIME).should.eventually.be.rejected;
+    });
+    //#endif
+
+    //#if D_CAN_CHANGE_START_TIME == true && D_CAN_CHANGE_END_TIME == true
+    it('#24 check set start time/end time', async () => {
+        const crowdsale = await createCrowdsale();
+        // after the end
+        const MIDDLE_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+
+        await crowdsale.setTimes(MIDDLE_TIME + 1, MIDDLE_TIME - 1).should.eventually.be.rejected;
+
+        await crowdsale.setTimes(START_TIME - 1, END_TIME).should.eventually.be.rejected;
+
+
+        await crowdsale.setTimes(MIDDLE_TIME - 1, MIDDLE_TIME + 1);
+        const newStartTime = await crowdsale.startTime();
+        newStartTime.should.be.equals(MIDDLE_TIME - 1, "start time was not changed");
+
+        const newEndTime = await crowdsale.endTime();
+        newEndTime.should.be.equals(MIDDLE_TIME + 1, "end time was not changed");
+    });
+
+    //#endif
 });
