@@ -577,7 +577,7 @@ contract('TemplateCrowdsale', accounts => {
 
         await crowdsale.setEndTime(NEW_END_TIME, {from: TARGET_USER});
         const newEndTime = await crowdsale.endTime();
-        newEndTime.should.be.equals(NEW_END_TIME, "end time was not changed");
+        Number(newEndTime).should.be.equals(NEW_END_TIME, "end time was not changed");
 
         // set end time by other
         await crowdsale.setEndTime(NEW_END_TIME - 1).should.eventually.be.rejected;
@@ -600,7 +600,7 @@ contract('TemplateCrowdsale', accounts => {
 
         await crowdsale.setEndTime(NEW_END_TIME, {from: TARGET_USER});
         const newEndTime = await crowdsale.endTime();
-        newEndTime.should.be.equals(NEW_END_TIME, "end time was not changed");
+        Number(newEndTime).should.be.equals(NEW_END_TIME, "end time was not changed");
 
         // move till ended
         await increaseTime(NEW_END_TIME - START_TIME + 1);
@@ -627,14 +627,14 @@ contract('TemplateCrowdsale', accounts => {
         const crowdsale = await createCrowdsale();
         const NEW_START_TIME = START_TIME + (END_TIME - START_TIME) / 2;
 
-        await crowdsale.setStartTime(NEW_START_TIME);
+        await crowdsale.setStartTime(NEW_START_TIME, {from: TARGET_USER});
         const newStartTime = await crowdsale.startTime();
-        newStartTime.should.be.equals(NEW_START_TIME, "start time was not changed");
+        Number(newStartTime).should.be.equals(NEW_START_TIME, "start time was not changed");
 
         // set start time by other
-        await crowdsale.setStartTime(NEW_START_TIME + 1, {from: BUYER_1}).should.eventually.be.rejected;
+        await crowdsale.setStartTime(NEW_START_TIME + 1).should.eventually.be.rejected;
         // set start time grate then end
-        await crowdsale.setStartTime(END_TIME + 1).should.eventually.be.rejected;
+        await crowdsale.setStartTime(END_TIME + 1, {from: TARGET_USER}).should.eventually.be.rejected;
 
         // move when already started
         await increaseTime(NEW_START_TIME - NOW + 1);
@@ -650,13 +650,13 @@ contract('TemplateCrowdsale', accounts => {
 
         const NEW_START_TIME = START_TIME + (END_TIME - START_TIME) / 2;
 
-        await crowdsale.setStartTime(NEW_START_TIME).should.eventually.be.rejected;
+        await crowdsale.setStartTime(NEW_START_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
 
         // move till ended
         await timeTo(END_TIME + 1);
 
         // impossible to change start time, because already ended
-        await crowdsale.setStartTime(END_TIME + 10).should.eventually.be.rejected;
+        await crowdsale.setStartTime(END_TIME + 10, {from: TARGET_USER}).should.eventually.be.rejected;
     });
 
     it('#23 check set wrong start time', async () => {
@@ -664,7 +664,7 @@ contract('TemplateCrowdsale', accounts => {
         // after the end
         const NEW_START_TIME = END_TIME + 1;
 
-        await crowdsale.setStartTime(NEW_START_TIME).should.eventually.be.rejected;
+        await crowdsale.setStartTime(NEW_START_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
     });
     //#endif
 
@@ -674,18 +674,34 @@ contract('TemplateCrowdsale', accounts => {
         // after the end
         const MIDDLE_TIME = START_TIME + (END_TIME - START_TIME) / 2;
 
-        await crowdsale.setTimes(MIDDLE_TIME + 1, MIDDLE_TIME - 1).should.eventually.be.rejected;
+        await crowdsale.setTimes(MIDDLE_TIME + 1, MIDDLE_TIME - 1, {from: TARGET_USER}).should.eventually.be.rejected;
 
-        await crowdsale.setTimes(START_TIME - 1, END_TIME).should.eventually.be.rejected;
+        await crowdsale.setTimes(START_TIME - 1, END_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
 
-
-        await crowdsale.setTimes(MIDDLE_TIME - 1, MIDDLE_TIME + 1);
+        await crowdsale.setTimes(MIDDLE_TIME - 1, MIDDLE_TIME + 1, {from: TARGET_USER});
         const newStartTime = await crowdsale.startTime();
-        newStartTime.should.be.equals(MIDDLE_TIME - 1, "start time was not changed");
+        Number(newStartTime).should.be.equals(MIDDLE_TIME - 1, "start time was not changed");
 
         const newEndTime = await crowdsale.endTime();
-        newEndTime.should.be.equals(MIDDLE_TIME + 1, "end time was not changed");
-    });
+        Number(newEndTime).should.be.equals(MIDDLE_TIME + 1, "end time was not changed");
 
+        await timeTo(MIDDLE_TIME - 10);
+        await crowdsale.setTimes(MIDDLE_TIME, MIDDLE_TIME + 20, {from: TARGET_USER});
+
+        await timeTo(MIDDLE_TIME + 10);
+        // already started
+        await crowdsale.setTimes(MIDDLE_TIME + 1, END_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
+        // end time in the past
+        await crowdsale.setTimes(MIDDLE_TIME, MIDDLE_TIME + 5, {from: TARGET_USER}).should.eventually.be.rejected;
+
+        await crowdsale.setTimes(MIDDLE_TIME, MIDDLE_TIME + 30, {from: TARGET_USER});
+
+        const finalEndTime = await crowdsale.endTime();
+        Number(finalEndTime).should.be.equals(MIDDLE_TIME + 30, "end time was not changed");
+
+        await timeTo(MIDDLE_TIME + 31);
+        // already ended
+        await crowdsale.setTimes(MIDDLE_TIME, END_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
+    });
     //#endif
 });
