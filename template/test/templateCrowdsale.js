@@ -573,7 +573,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#18 check set end time', async () => {
         const crowdsale = await createCrowdsale();
         // const oldEndTime = await crowdsale.endTime();
-        const NEW_END_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+        const NEW_END_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         await crowdsale.setEndTime(NEW_END_TIME, {from: TARGET_USER});
         const newEndTime = await crowdsale.endTime();
@@ -593,7 +593,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#19 check set end time at wrong time', async () => {
         const crowdsale = await createCrowdsale();
         // const oldEndTime = await crowdsale.endTime();
-        const NEW_END_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+        const NEW_END_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         // move till started
         await increaseTime(START_TIME - NOW + 1);
@@ -625,7 +625,7 @@ contract('TemplateCrowdsale', accounts => {
     //#if D_CAN_CHANGE_START_TIME == true
     it('#21 check set start time', async () => {
         const crowdsale = await createCrowdsale();
-        const NEW_START_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+        const NEW_START_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         await crowdsale.setStartTime(NEW_START_TIME, {from: TARGET_USER});
         const newStartTime = await crowdsale.startTime();
@@ -648,7 +648,7 @@ contract('TemplateCrowdsale', accounts => {
         // move till started
         await timeTo(START_TIME + 1);
 
-        const NEW_START_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+        const NEW_START_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         await crowdsale.setStartTime(NEW_START_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
 
@@ -672,7 +672,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#24 check set start time/end time', async () => {
         const crowdsale = await createCrowdsale();
         // after the end
-        const MIDDLE_TIME = START_TIME + (END_TIME - START_TIME) / 2;
+        const MIDDLE_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         await crowdsale.setTimes(MIDDLE_TIME + 1, MIDDLE_TIME - 1, {from: TARGET_USER}).should.eventually.be.rejected;
 
