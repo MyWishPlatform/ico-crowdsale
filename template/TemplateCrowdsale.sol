@@ -169,7 +169,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
             // end time in future
             require(now < _endTime);
 
-            oldEndTime = _endTime;
+            endTime = _endTime;
             changed = true;
         }
 
