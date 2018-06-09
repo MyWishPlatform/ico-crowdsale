@@ -29,6 +29,6 @@
     "ganache-cli": "^6.0.3",
     "solc": "^0.4.21",
     "truffle": "^4.1.0",
-    "zeppelin-solidity": "^1.4.0"
+    "zeppelin-solidity": "1.4.0"
   }
 }
