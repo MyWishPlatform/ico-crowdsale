@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 import "zeppelin-solidity/contracts/crowdsale/CappedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/RefundableCrowdsale.sol";
@@ -19,6 +19,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     //#endif
 {
     event Initialized();
+    event TimesChanged(uint startTime, uint endTime, uint oldStartTime, uint oldEndTime);
     bool public initialized = false;
 
     function TemplateCrowdsale(MintableToken _token) public
@@ -55,7 +56,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
 
         transferOwnership(TARGET_USER);
 
-        Initialized();
+        emit Initialized();
     }
 
     /**
@@ -72,7 +73,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      */
     function internalCheck() internal returns (bool) {
         bool result = !isFinalized && hasEnded();
-        Checked(result);
+        emit Checked(result);
         return result;
     }
 
@@ -81,7 +82,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      */
     function internalAction() internal {
         finalization();
-        Finalized();
+        emit Finalized();
 
         isFinalized = true;
     }
@@ -129,6 +130,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         // only move time to future
         require(_startTime > startTime);
         require(_startTime < endTime);
+        emit TimesChanged(_startTime, endTime, startTime, endTime);
         startTime = _startTime;
     }
     //#endif
@@ -140,6 +142,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         // only if new end time in future
         require(now < _endTime);
         require(_endTime > startTime);
+        emit TimesChanged(startTime, _endTime, startTime, endTime);
         endTime = _endTime;
     }
     //#endif
@@ -147,22 +150,31 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if D_CAN_CHANGE_START_TIME == true && D_CAN_CHANGE_END_TIME == true
     function setTimes(uint _startTime, uint _endTime) public onlyOwner {
         require(_endTime > _startTime);
-        if (_startTime != startTime) {
+        uint oldStartTime = startTime;
+        uint oldEndTime = endTime;
+        bool changed = false;
+        if (_startTime != oldStartTime) {
             require(_startTime > now);
             // only if CS was not started
-            require(now < startTime);
+            require(now < oldStartTime);
             // only move time to future
-            require(_startTime > startTime);
+            require(_startTime > oldStartTime);
 
             startTime = _startTime;
+            changed = true;
         }
-        if (_endTime != endTime) {
+        if (_endTime != oldEndTime) {
             // only if CS was not ended
-            require(now < endTime);
+            require(now < oldEndTime);
             // end time in future
             require(now < _endTime);
 
-            endTime = _endTime;
+            oldEndTime = _endTime;
+            changed = true;
+        }
+
+        if (changed) {
+            emit TimesChanged(startTime, _endTime, startTime, endTime);
         }
     }
     //#endif

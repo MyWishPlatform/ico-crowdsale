@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 import "zeppelin-solidity/contracts/crowdsale/FinalizableCrowdsale.sol";
 import "./MainToken.sol";
@@ -36,7 +36,7 @@ contract MainCrowdsale is Consts, FinalizableCrowdsale {
         weiRaised = weiRaised.add(weiAmount);
 
         token.mint(beneficiary, tokens);
-        TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+        emit TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
 
         forwardFunds();
     }

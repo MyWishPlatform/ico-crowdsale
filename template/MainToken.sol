@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 import "zeppelin-solidity/contracts/token/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/BurnableToken.sol";
@@ -47,7 +47,7 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
             finishMinting();
         }
 
-        Initialized();
+        emit Initialized();
     }
     //#endif
 
