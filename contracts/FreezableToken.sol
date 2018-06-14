@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 
 import "zeppelin-solidity/contracts/token/StandardToken.sol";
@@ -85,7 +85,7 @@ contract FreezableToken is StandardToken {
 
         freeze(_to, _until);
         Transfer(msg.sender, _to, _amount);
-        Freezed(_to, _until, _amount);
+        emit Freezed(_to, _until, _amount);
     }
 
     /**
@@ -113,7 +113,7 @@ contract FreezableToken is StandardToken {
             chains[headKey] = next;
             delete chains[currentKey];
         }
-        Released(msg.sender, amount);
+        emit Released(msg.sender, amount);
     }
 
     /**

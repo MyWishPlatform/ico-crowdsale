@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 contract Checkable {
     address private serviceAccount;
@@ -41,7 +41,7 @@ contract Checkable {
      */
     function check() onlyService notTriggered payable public {
         if (internalCheck()) {
-            Triggered(this.balance);
+            emit Triggered(this.balance);
             triggered = true;
             internalAction();
         }
