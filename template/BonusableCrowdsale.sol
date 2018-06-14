@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "./Consts.sol";
@@ -19,7 +19,7 @@ contract BonusableCrowdsale is Consts, Crowdsale {
         weiRaised = weiRaised.add(weiAmount);
 
         token.mint(beneficiary, tokens);
-        TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+        emit TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
 
         forwardFunds();
     }

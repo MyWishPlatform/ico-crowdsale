@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.21;
 
 
 import "zeppelin-solidity/contracts/token/MintableToken.sol";
@@ -22,9 +22,9 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
         freezingBalance[_to] = freezingBalance[_to].add(_amount);
 
         freeze(_to, _until);
-        Mint(_to, _amount);
-        Freezed(_to, _until, _amount);
-        Transfer(msg.sender, _to, _amount);
+        emit Mint(_to, _amount);
+        emit Freezed(_to, _until, _amount);
+        emit Transfer(msg.sender, _to, _amount);
         return true;
     }
 }
