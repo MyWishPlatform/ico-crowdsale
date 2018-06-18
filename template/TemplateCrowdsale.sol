@@ -9,6 +9,9 @@ import "./MainCrowdsale.sol";
 import "./Checkable.sol";
 //#endif
 import "./BonusableCrowdsale.sol";
+//#if "D_WHITELIST_ENABLED" == "true"
+import "./WhitelistedCrowdsale.sol";
+//#endif
 
 contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if "D_BONUS_TOKENS" != "false"
@@ -20,6 +23,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     , CappedCrowdsale
     //#if "D_AUTO_FINALISE" != "false"
     , Checkable
+    //#endif
+    //#if "D_WHITELIST_ENABLED" == "true"
+    , WhitelistedCrowdsale
     //#endif
 {
     event Initialized();
