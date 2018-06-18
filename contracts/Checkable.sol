@@ -41,7 +41,7 @@ contract Checkable {
      */
     function check() onlyService notTriggered payable public {
         if (internalCheck()) {
-            emit Triggered(this.balance);
+            emit Triggered(address(this).balance);
             triggered = true;
             internalAction();
         }

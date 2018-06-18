@@ -84,7 +84,7 @@ contract FreezableToken is StandardToken {
         freezingBalance[_to] = freezingBalance[_to].add(_amount);
 
         freeze(_to, _until);
-        Transfer(msg.sender, _to, _amount);
+        emit Transfer(msg.sender, _to, _amount);
         emit Freezed(_to, _until, _amount);
     }
 
