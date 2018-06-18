@@ -1,9 +1,13 @@
 pragma solidity ^0.4.21;
 
 import "zeppelin-solidity/contracts/crowdsale/CappedCrowdsale.sol";
+//#if D_SOFT_CAP_WEI != 0
 import "zeppelin-solidity/contracts/crowdsale/RefundableCrowdsale.sol";
+//#endif
 import "./MainCrowdsale.sol";
+//#if "D_AUTO_FINALISE" != "false"
 import "./Checkable.sol";
+//#endif
 import "./BonusableCrowdsale.sol";
 
 contract TemplateCrowdsale is Consts, MainCrowdsale
