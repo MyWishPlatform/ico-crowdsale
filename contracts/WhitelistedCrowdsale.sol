@@ -6,6 +6,9 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract WhitelistedCrowdsale is Crowdsale, Ownable {
     mapping (address => bool) private whitelist;
 
+    event WhitelistedAddressAdded(address indexed _address);
+    event WhitelistedAddressRemoved(address indexed _address);
+
     /**
      * @dev throws if buyer is not whitelisted.
      * @param _buyer address
@@ -35,6 +38,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
      */
     function addAddressToWhitelist(address _address) external onlyOwner {
         whitelist[_address] = true;
+        emit WhitelistedAddressAdded(_address);
     }
 
     /**
@@ -43,6 +47,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     function addAddressesToWhitelist(address[] _addresses) external onlyOwner {
         for (uint i = 0; i < _addresses.length; i++) {
             whitelist[_addresses[i]] = true;
+            emit WhitelistedAddressAdded(_addresses[i]);
         }
     }
 
@@ -51,6 +56,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
      */
     function removeAddressFromWhitelist(address _address) external onlyOwner {
         delete whitelist[_address];
+        emit WhitelistedAddressRemoved(_address);
     }
 
     /**
@@ -59,6 +65,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     function removeAddressesFromWhitelist(address[] _addresses) external onlyOwner {
         for (uint i = 0; i < _addresses.length; i++) {
             delete whitelist[_addresses[i]];
+            emit WhitelistedAddressRemoved(_addresses[i]);
         }
     }
 }
