@@ -8,7 +8,9 @@ const {web3async, estimateConstructGas} = require('./web3Utils');
 
 const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 const Token = artifacts.require("./MainToken.sol");
+//#if D_SOFT_CAP_WEI != 0
 const RefundVault = artifacts.require("./RefundVault.sol");
+//#endif
 
 const BASE_RATE = new web3.BigNumber("D_RATE");
 const SOFT_CAP_WEI = new web3.BigNumber("D_SOFT_CAP_WEI");
@@ -752,6 +754,85 @@ contract('TemplateCrowdsale', accounts => {
         await timeTo(MIDDLE_TIME + 31);
         // already ended
         await crowdsale.setTimes(MIDDLE_TIME, END_TIME, {from: TARGET_USER}).should.eventually.be.rejected;
+    });
+    //#endif
+
+    //#if D_WHITELIST_ENABLED
+    it('#25 check buy not by whitelisted', async () => {
+        const crowdsale = await createCrowdsale();
+        await timeTo(START_TIME);
+
+        let wei = SOFT_CAP_WEI.div(2).floor();
+        //#if D_SOFT_CAP_WEI == 0
+        wei = HARD_CAP_WEI.div(2).floor();
+        //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = web3.BigNumber.max(web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
+        await crowdsale.sendTransaction({from: BUYER_1, value: wei}).should.eventually.be.rejected;
+    });
+
+    it('#26 check add multiple addresses to whitelist', async () => {
+        let wei = SOFT_CAP_WEI.div(2).floor();
+        //#if D_SOFT_CAP_WEI == 0
+        wei = HARD_CAP_WEI.div(2).floor();
+        //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = web3.BigNumber.max(web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
+        const addresses = [BUYER_1, BUYER_2];
+
+        for (let i = 0; i < addresses.length; i++) {
+            await revert(snapshotId);
+            snapshotId = (await snapshot()).result;
+
+            const crowdsale = await createCrowdsale();
+            await timeTo(START_TIME);
+
+            await crowdsale.addAddressesToWhitelist(addresses, {from: TARGET_USER});
+            await crowdsale.sendTransaction({from: addresses[i], value: wei});
+        }
+    });
+
+    it('#27 check remove addresses from whitelist', async () => {
+        let wei = SOFT_CAP_WEI.div(2).floor();
+        //#if D_SOFT_CAP_WEI == 0
+        wei = HARD_CAP_WEI.div(2).floor();
+        //#endif
+
+        //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
+        wei = web3.BigNumber.max(web3.BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        wei = web3.BigNumber.min(wei, MAX_VALUE_WEI);
+        //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        wei = web3.BigNumber.max(wei, MIN_VALUE_WEI);
+        //#endif
+
+        const addresses = [BUYER_1, BUYER_2, BUYER_3];
+
+        const crowdsale = await createCrowdsale();
+        await timeTo(START_TIME);
+
+        await crowdsale.addAddressesToWhitelist(addresses, {from: TARGET_USER});
+
+        await crowdsale.removeAddressFromWhitelist(BUYER_1, {from: TARGET_USER});
+        await crowdsale.sendTransaction({from: BUYER_1, value: wei}).should.eventually.be.rejected;
+
+        await crowdsale.removeAddressesFromWhitelist([BUYER_2, BUYER_3], {from: TARGET_USER});
+        await crowdsale.sendTransaction({from: BUYER_2, value: wei}).should.eventually.be.rejected;
+        await crowdsale.sendTransaction({from: BUYER_3, value: wei}).should.eventually.be.rejected;
     });
     //#endif
 });
