@@ -3,9 +3,10 @@ pragma solidity ^0.4.23;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BasicToken.sol";
 import "openzeppelin-solidity/contracts/AddressUtils.sol";
-import './ERC223Basic.sol';
-import './ERC223Receiver.sol';
-import './ERC223ReceiverImpl.sol';
+import "./ERC223Basic.sol";
+import "./ERC223Receiver.sol";
+import "./ERC223ReceiverImpl.sol";
+
 
 /**
  * @title Reference implementation of the ERC223 standard token.
@@ -30,7 +31,7 @@ contract ERC223Token is ERC223Basic, BasicToken, FailingERC223Receiver {
         // Added due to backwards compatibility reasons .
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        if(_to.isContract()) {
+        if (_to.isContract()) {
             ERC223Receiver receiver = ERC223Receiver(_to);
             receiver.tokenFallback(msg.sender, _value, _data);
         }

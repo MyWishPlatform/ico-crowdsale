@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "./Consts.sol";
 
+
 contract BonusableCrowdsale is Consts, Crowdsale {
     /**
      * @dev Override to extend the way in which ether is converted to tokens.
@@ -21,15 +22,15 @@ contract BonusableCrowdsale is Consts, Crowdsale {
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
         // apply bonus for time & weiRaised
-        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedStartsBoundaries = [D_WEI_RAISED_STARTS_BOUNDARIES];
-        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedEndsBoundaries = [D_WEI_RAISED_ENDS_BOUNDARIES];
-        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeStartsBoundaries = [D_TIME_STARTS_BOUNDARIES];
-        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeEndsBoundaries = [D_TIME_ENDS_BOUNDARIES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedStartsBounds = [D_WEI_RAISED_STARTS_BOUNDARIES];
+        uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedEndsBounds = [D_WEI_RAISED_ENDS_BOUNDARIES];
+        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeStartsBounds = [D_TIME_STARTS_BOUNDARIES];
+        uint64[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory timeEndsBounds = [D_TIME_ENDS_BOUNDARIES];
         uint[D_WEI_RAISED_AND_TIME_BONUS_COUNT] memory weiRaisedAndTimeRates = [D_WEI_RAISED_AND_TIME_MILLIRATES];
 
         for (uint i = 0; i < D_WEI_RAISED_AND_TIME_BONUS_COUNT; i++) {
-            bool weiRaisedInBound = (weiRaisedStartsBoundaries[i] <= weiRaised) && (weiRaised < weiRaisedEndsBoundaries[i]);
-            bool timeInBound = (timeStartsBoundaries[i] <= now) && (now < timeEndsBoundaries[i]);
+            bool weiRaisedInBound = (weiRaisedStartsBounds[i] <= weiRaised) && (weiRaised < weiRaisedEndsBounds[i]);
+            bool timeInBound = (timeStartsBounds[i] <= now) && (now < timeEndsBounds[i]);
             if (weiRaisedInBound && timeInBound) {
                 bonusRate += bonusRate * weiRaisedAndTimeRates[i] / 1000;
             }
@@ -38,11 +39,11 @@ contract BonusableCrowdsale is Consts, Crowdsale {
 
         //#if defined(D_WEI_AMOUNT_BONUS_COUNT) && D_WEI_AMOUNT_BONUS_COUNT > 0
         // apply amount
-        uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountBoundaries = [D_WEI_AMOUNT_BOUNDARIES];
+        uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountBounds = [D_WEI_AMOUNT_BOUNDARIES];
         uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountRates = [D_WEI_AMOUNT_MILLIRATES];
 
         for (uint j = 0; j < D_WEI_AMOUNT_BONUS_COUNT; j++) {
-            if (_weiAmount >= weiAmountBoundaries[j]) {
+            if (_weiAmount >= weiAmountBounds[j]) {
                 bonusRate += bonusRate * weiAmountRates[j] / 1000;
                 break;
             }

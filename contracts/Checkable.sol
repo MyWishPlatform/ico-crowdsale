@@ -1,5 +1,6 @@
 pragma solidity ^0.4.23;
 
+
 contract Checkable {
     address private serviceAccount;
     /**
@@ -24,7 +25,7 @@ contract Checkable {
      * @dev Replace service account with new one.
      * @param _account Valid service account address.
      */
-    function changeServiceAccount(address _account) onlyService public {
+    function changeServiceAccount(address _account) public onlyService {
         assert(_account != 0);
         serviceAccount = _account;
     }
@@ -32,14 +33,14 @@ contract Checkable {
     /**
      * @dev Is caller (sender) service account.
      */
-    function isServiceAccount() view public returns (bool) {
+    function isServiceAccount() public view returns (bool) {
         return msg.sender == serviceAccount;
     }
 
     /**
      * Public check method.
      */
-    function check() onlyService notTriggered payable public {
+    function check() public onlyService notTriggered payable {
         if (internalCheck()) {
             emit Triggered(address(this).balance);
             triggered = true;

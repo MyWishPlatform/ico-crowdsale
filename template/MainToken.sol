@@ -9,6 +9,7 @@ import "./Consts.sol";
 import "./ERC223Token.sol";
 //#endif
 
+
 contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     //#if "D_ERC" == "ERC223"
     , ERC223Token
@@ -21,6 +22,28 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     constructor() public {
         init();
         transferOwnership(TARGET_USER);
+    }
+
+    function name() public pure returns (string _name) {
+        return TOKEN_NAME;
+    }
+
+    function symbol() public pure returns (string _symbol) {
+        return TOKEN_SYMBOL;
+    }
+
+    function decimals() public pure returns (uint8 _decimals) {
+        return TOKEN_DECIMALS_UINT8;
+    }
+
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool _success) {
+        require(!paused);
+        return super.transferFrom(_from, _to, _value);
+    }
+
+    function transfer(address _to, uint256 _value) public returns (bool _success) {
+        require(!paused);
+        return super.transfer(_to, _value);
     }
 
     function init() private {
@@ -52,26 +75,4 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         emit Initialized();
     }
     //#endif
-
-    function name() pure public returns (string _name) {
-        return TOKEN_NAME;
-    }
-
-    function symbol() pure public returns (string _symbol) {
-        return TOKEN_SYMBOL;
-    }
-
-    function decimals() pure public returns (uint8 _decimals) {
-        return TOKEN_DECIMALS_UINT8;
-    }
-
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool _success) {
-        require(!paused);
-        return super.transferFrom(_from, _to, _value);
-    }
-
-    function transfer(address _to, uint256 _value) public returns (bool _success) {
-        require(!paused);
-        return super.transfer(_to, _value);
-    }
 }

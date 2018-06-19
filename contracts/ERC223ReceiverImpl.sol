@@ -1,6 +1,7 @@
 pragma solidity ^0.4.23;
 
-import './ERC223Receiver.sol';
+import "./ERC223Receiver.sol";
+
 
 contract SuccessfulERC223Receiver is ERC223Receiver {
     event Invoked(address from, uint value, bytes data);
@@ -10,11 +11,13 @@ contract SuccessfulERC223Receiver is ERC223Receiver {
     }
 }
 
+
 contract FailingERC223Receiver is ERC223Receiver {
     function tokenFallback(address, uint, bytes) public {
         revert();
     }
 }
+
 
 contract ERC223ReceiverWithoutTokenFallback {
 }

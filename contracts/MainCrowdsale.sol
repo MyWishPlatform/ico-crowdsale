@@ -7,23 +7,10 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "./MainToken.sol";
 import "./Consts.sol";
 
+
 contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedCrowdsale {
     function hasStarted() public view returns (bool) {
         return now >= openingTime;
-    }
-
-    function finalization() internal {
-        super.finalization();
-
-        if (PAUSED) {
-            MainToken(token).unpause();
-        }
-
-        if (!CONTINUE_MINTING) {
-            require(MintableToken(token).finishMinting());
-        }
-
-        Ownable(token).transferOwnership(TARGET_USER);
     }
 
     function startTime() public view returns (uint256) {
@@ -40,6 +27,20 @@ contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedC
 
     function hasEnded() public view returns (bool) {
         return hasClosed();
+    }
+
+    function finalization() internal {
+        super.finalization();
+
+        if (PAUSED) {
+            MainToken(token).unpause();
+        }
+
+        if (!CONTINUE_MINTING) {
+            require(MintableToken(token).finishMinting());
+        }
+
+        Ownable(token).transferOwnership(TARGET_USER);
     }
 
     /**

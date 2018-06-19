@@ -14,6 +14,7 @@ import "./BonusableCrowdsale.sol";
 import "./WhitelistedCrowdsale.sol";
 //#endif
 
+
 contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if D_BONUS_TOKENS
     , BonusableCrowdsale
@@ -68,49 +69,6 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
 
         emit Initialized();
     }
-
-    //#if D_AUTO_FINALISE
-    /**
-     * @dev Do inner check.
-     * @return bool true of accident triggered, false otherwise.
-     */
-    function internalCheck() internal returns (bool) {
-        bool result = !isFinalized && hasClosed();
-        emit Checked(result);
-        return result;
-    }
-
-    /**
-     * @dev Do inner action if check was success.
-     */
-    function internalAction() internal {
-        finalization();
-        emit Finalized();
-
-        isFinalized = true;
-    }
-    //#endif
-
-    //#if defined(D_MIN_VALUE_WEI) || defined(D_MAX_VALUE_WEI)
-    /**
-     * @dev override purchase validation to add extra value logic.
-     * @return true if sended more than minimal value
-     */
-    function _preValidatePurchase(
-        address _beneficiary,
-        uint256 _weiAmount
-    )
-        internal
-    {
-        //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        require(msg.value >= D_MIN_VALUE_WEI);
-        //#endif
-        //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        require(msg.value <= D_MAX_VALUE_WEI);
-        //#endif
-        super._preValidatePurchase(_beneficiary, _weiAmount);
-    }
-    //#endif
 
     //#if defined(D_MIN_VALUE_WEI)
     /**
@@ -176,6 +134,49 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         if (changed) {
             emit TimesChanged(openingTime, _endTime, openingTime, closingTime);
         }
+    }
+    //#endif
+
+    //#if D_AUTO_FINALISE
+    /**
+     * @dev Do inner check.
+     * @return bool true of accident triggered, false otherwise.
+     */
+    function internalCheck() internal returns (bool) {
+        bool result = !isFinalized && hasClosed();
+        emit Checked(result);
+        return result;
+    }
+
+    /**
+     * @dev Do inner action if check was success.
+     */
+    function internalAction() internal {
+        finalization();
+        emit Finalized();
+
+        isFinalized = true;
+    }
+    //#endif
+
+    //#if defined(D_MIN_VALUE_WEI) || defined(D_MAX_VALUE_WEI)
+    /**
+     * @dev override purchase validation to add extra value logic.
+     * @return true if sended more than minimal value
+     */
+    function _preValidatePurchase(
+        address _beneficiary,
+        uint256 _weiAmount
+    )
+        internal
+    {
+        //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
+        require(msg.value >= D_MIN_VALUE_WEI);
+        //#endif
+        //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
+        require(msg.value <= D_MAX_VALUE_WEI);
+        //#endif
+        super._preValidatePurchase(_beneficiary, _weiAmount);
     }
     //#endif
 }

@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 contract WhitelistedCrowdsale is Crowdsale, Ownable {
     mapping (address => bool) private whitelist;
 
@@ -16,28 +17,6 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     modifier onlyIfWhitelisted(address _buyer) {
         require(whitelist[_buyer]);
         _;
-    }
-
-    /**
-     * @dev getter to determine if address is in whitelist
-     */
-    function isWhitelisted(address _address) public view returns (bool) {
-        return whitelist[_address];
-    }
-
-    /**
-     * @dev Validation of an incoming purchase. Use require statements to revert state when conditions are not met. Use super to concatenate validations.
-     * @param _beneficiary Address performing the token purchase
-     * @param _weiAmount Value in wei involved in the purchase
-     */
-    function _preValidatePurchase(
-        address _beneficiary,
-        uint256 _weiAmount
-    )
-        onlyIfWhitelisted(_beneficiary)
-        internal
-    {
-        super._preValidatePurchase(_beneficiary, _weiAmount);
     }
 
     /**
@@ -74,5 +53,27 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
             delete whitelist[_addresses[i]];
             emit WhitelistedAddressRemoved(_addresses[i]);
         }
+    }
+
+    /**
+     * @dev getter to determine if address is in whitelist
+     */
+    function isWhitelisted(address _address) public view returns (bool) {
+        return whitelist[_address];
+    }
+
+    /**
+     * @dev Extend parent behavior requiring beneficiary to be in whitelist.
+     * @param _beneficiary Token beneficiary
+     * @param _weiAmount Amount of wei contributed
+     */
+    function _preValidatePurchase(
+        address _beneficiary,
+        uint256 _weiAmount
+    )
+        internal
+        onlyIfWhitelisted(_beneficiary)
+    {
+        super._preValidatePurchase(_beneficiary, _weiAmount);
     }
 }
