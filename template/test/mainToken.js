@@ -7,7 +7,7 @@ const {increaseTime, revert, snapshot} = require('./evmMethods');
 const utils = require('./web3Utils');
 
 const Token = artifacts.require("./MainToken.sol");
-//#if !defined(D_ONLY_TOKEN) || D_ONLY_TOKEN != true
+//#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN
 const Crowdsale = artifacts.require("./TemplateCrowdsale.sol");
 //#endif
 const SuccessfulERC223Receiver = artifacts.require("./SuccessfulERC223Receiver.sol");
@@ -47,7 +47,7 @@ contract('Token', accounts => {
     const TARGET_USER = accounts[5];
 
     let TOKEN_OWNER = OWNER;
-    //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
+    //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
     TOKEN_OWNER = TARGET_USER;
     //#endif
 
@@ -79,7 +79,7 @@ contract('Token', accounts => {
         (await token.owner()).should.be.equals(TOKEN_OWNER);
     });
 
-    //#if D_CONTINUE_MINTING == false && defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
+    //#if !D_CONTINUE_MINTING && defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
     it('#2 cannot mint if CONTINUE_MINTING is false', async () => {
         const token = await Token.new();
 
@@ -157,7 +157,7 @@ contract('Token', accounts => {
     //#if D_PREMINT_COUNT > 0
     it('#8 check initial freezes', async () => {
         const token = await Token.new();
-        //#if !defined(D_ONLY_TOKEN) || D_ONLY_TOKEN != true
+        //#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN
         const crowdsale = await Crowdsale.new(token.address);
         await token.transferOwnership(crowdsale.address);
         await crowdsale.init();

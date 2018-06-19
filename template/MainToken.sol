@@ -1,8 +1,8 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/token/MintableToken.sol";
-import "zeppelin-solidity/contracts/token/BurnableToken.sol";
-import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 //#if "D_ERC" == "ERC223"
@@ -18,7 +18,7 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     event Initialized();
     bool public initialized = false;
 
-    function MainToken() public {
+    constructor() public {
         init();
         transferOwnership(TARGET_USER);
     }

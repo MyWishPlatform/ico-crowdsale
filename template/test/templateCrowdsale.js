@@ -31,7 +31,7 @@ const initTime = (now) => {
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
 
-//#if D_BONUS_TOKENS == true
+//#if D_BONUS_TOKENS
 
 /**
  * Mapping string to number, eg:
@@ -110,7 +110,7 @@ contract('TemplateCrowdsale', accounts => {
     const getRate = async (weiAmount, crowdsale) => {
         let rate = BASE_RATE.mul(TOKEN_DECIMAL_MULTIPLIER);
 
-        //#if D_BONUS_TOKENS == true
+        //#if D_BONUS_TOKENS
         const now = new web3.BigNumber(await getBlockchainTimestamp());
         const weiRaised = await crowdsale.weiRaised();
 
@@ -150,7 +150,8 @@ contract('TemplateCrowdsale', accounts => {
     });
 
     it('#0 gas usage', async () => {
-        await estimateConstructGas(Crowdsale)
+        const token = await Token.new();
+        await estimateConstructGas(Crowdsale, token.address)
             .then(console.info);
     });
 
@@ -194,7 +195,6 @@ contract('TemplateCrowdsale', accounts => {
         hasEnded.should.be.equals(false, "hasEnded before timeshift");
 
         await timeTo(END_TIME + 1);
-        // await increaseTime(END_TIME - NOW);
 
         hasStarted = await crowdsale.hasStarted();
         hasEnded = await crowdsale.hasEnded();
@@ -344,7 +344,7 @@ contract('TemplateCrowdsale', accounts => {
         // try to transfer some tokens (it should work now)
         const tokens = await tokensForWei(wei, crowdsale);
 
-        //#if D_CONTINUE_MINTING == true
+        //#if D_CONTINUE_MINTING
         await token.mint(BUYER_2, tokens, {from: TARGET_USER});
         (await token.balanceOf(BUYER_2)).should.be.bignumber.equals(tokens, 'balanceOf just minted tokens must be');
         //#else
@@ -383,7 +383,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.send(wei);
 
         // check transferable before end
-        //#if D_PAUSE_TOKENS == true
+        //#if D_PAUSE_TOKENS
         await token.transfer(BUYER_1, (await tokensForWei(wei, crowdsale)).div(2)).should.eventually.be.rejected;
         //#else
         await token.transfer(BUYER_1, (await tokensForWei(wei, crowdsale)).div(2));
@@ -624,7 +624,7 @@ contract('TemplateCrowdsale', accounts => {
     //#if D_CAN_CHANGE_END_TIME == true
     it('#18 check set end time', async () => {
         const crowdsale = await createCrowdsale();
-        // const oldEndTime = await crowdsale.endTime();
+
         const NEW_END_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         await crowdsale.setEndTime(NEW_END_TIME, {from: TARGET_USER});
@@ -644,7 +644,7 @@ contract('TemplateCrowdsale', accounts => {
 
     it('#19 check set end time at wrong time', async () => {
         const crowdsale = await createCrowdsale();
-        // const oldEndTime = await crowdsale.endTime();
+
         const NEW_END_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         // move till started
@@ -663,7 +663,7 @@ contract('TemplateCrowdsale', accounts => {
 
     it('#20 check set wrong end time', async () => {
         const crowdsale = await createCrowdsale();
-        // const oldEndTime = await crowdsale.endTime();
+
         const MIDDLE_TIME = START_TIME + (END_TIME - START_TIME) / 2;
 
         // move till new end time will be in the past

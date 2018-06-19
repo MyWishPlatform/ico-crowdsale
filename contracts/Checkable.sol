@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 contract Checkable {
     address private serviceAccount;
@@ -16,7 +16,7 @@ contract Checkable {
      */
     event Checked(bool isAccident);
 
-    function Checkable() public {
+    constructor() public {
         serviceAccount = msg.sender;
     }
 

@@ -1,8 +1,6 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-
-import "zeppelin-solidity/contracts/token/StandardToken.sol";
-
+import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
 contract FreezableToken is StandardToken {
     // freezing chains

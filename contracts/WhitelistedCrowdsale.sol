@@ -1,7 +1,7 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract WhitelistedCrowdsale is Crowdsale, Ownable {
     mapping (address => bool) private whitelist;
@@ -26,11 +26,18 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     }
 
     /**
-     * @dev override purchase validation to add extra value logic.
-     * @return true if sender is whitelisted
+     * @dev Validation of an incoming purchase. Use require statements to revert state when conditions are not met. Use super to concatenate validations.
+     * @param _beneficiary Address performing the token purchase
+     * @param _weiAmount Value in wei involved in the purchase
      */
-    function validPurchase() internal view onlyIfWhitelisted(msg.sender) returns (bool) {
-        return super.validPurchase();
+    function _preValidatePurchase(
+        address _beneficiary,
+        uint256 _weiAmount
+    )
+        onlyIfWhitelisted(_beneficiary)
+        internal
+    {
+        super._preValidatePurchase(_beneficiary, _weiAmount);
     }
 
     /**

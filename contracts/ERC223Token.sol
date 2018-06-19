@@ -1,7 +1,8 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "zeppelin-solidity/contracts/token/BasicToken.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/BasicToken.sol";
+import "openzeppelin-solidity/contracts/AddressUtils.sol";
 import './ERC223Basic.sol';
 import './ERC223Receiver.sol';
 import './ERC223ReceiverImpl.sol';
@@ -11,6 +12,7 @@ import './ERC223ReceiverImpl.sol';
  */
 contract ERC223Token is ERC223Basic, BasicToken, FailingERC223Receiver {
     using SafeMath for uint;
+    using AddressUtils for address;
 
     /**
      * @dev Transfer the specified amount of tokens to the specified address.
@@ -26,16 +28,9 @@ contract ERC223Token is ERC223Basic, BasicToken, FailingERC223Receiver {
     function transfer(address _to, uint _value, bytes _data) public returns (bool) {
         // Standard function transfer similar to ERC20 transfer with no _data .
         // Added due to backwards compatibility reasons .
-        uint codeLength;
-
-        assembly {
-            // Retrieve the size of the code on target address, this needs assembly.
-            codeLength := extcodesize(_to)
-        }
-
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        if(codeLength > 0) {
+        if(_to.isContract()) {
             ERC223Receiver receiver = ERC223Receiver(_to);
             receiver.tokenFallback(msg.sender, _value, _data);
         }

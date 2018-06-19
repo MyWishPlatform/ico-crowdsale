@@ -1,30 +1,22 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
+import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "./Consts.sol";
 
 contract BonusableCrowdsale is Consts, Crowdsale {
-
-    function buyTokens(address beneficiary) public payable {
-        require(beneficiary != address(0));
-        require(validPurchase());
-
-        uint256 weiAmount = msg.value;
-
-        // calculate token amount to be created
-        uint256 bonusRate = getBonusRate(weiAmount);
-        uint256 tokens = weiAmount.mul(bonusRate).div(1 ether);
-
-        // update state
-        weiRaised = weiRaised.add(weiAmount);
-
-        token.mint(beneficiary, tokens);
-        emit TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
-
-        forwardFunds();
+    /**
+     * @dev Override to extend the way in which ether is converted to tokens.
+     * @param _weiAmount Value in wei to be converted into tokens
+     * @return Number of tokens that can be purchased with the specified _weiAmount
+     */
+    function _getTokenAmount(uint256 _weiAmount)
+        internal view returns (uint256)
+    {
+        uint256 bonusRate = getBonusRate(_weiAmount);
+        return _weiAmount.mul(bonusRate).div(1 ether);
     }
 
-    function getBonusRate(uint256 weiAmount) internal view returns (uint256) {
+    function getBonusRate(uint256 _weiAmount) internal view returns (uint256) {
         uint256 bonusRate = rate;
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
@@ -50,7 +42,7 @@ contract BonusableCrowdsale is Consts, Crowdsale {
         uint[D_WEI_AMOUNT_BONUS_COUNT] memory weiAmountRates = [D_WEI_AMOUNT_MILLIRATES];
 
         for (uint j = 0; j < D_WEI_AMOUNT_BONUS_COUNT; j++) {
-            if (weiAmount >= weiAmountBoundaries[j]) {
+            if (_weiAmount >= weiAmountBoundaries[j]) {
                 bonusRate += bonusRate * weiAmountRates[j] / 1000;
                 break;
             }
