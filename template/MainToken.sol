@@ -5,7 +5,9 @@ import "zeppelin-solidity/contracts/token/BurnableToken.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./FreezableMintableToken.sol";
 import "./Consts.sol";
+//#if "D_ERC" == "ERC223"
 import "./ERC223Token.sol";
+//#endif
 
 contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     //#if "D_ERC" == "ERC223"
