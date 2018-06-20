@@ -15,12 +15,12 @@ let contractIdsToCombine = [];
 
 main();
 
-function main() {
+function main () {
     loadContracts();
     contractIdsToCombine.forEach(toOneFile);
 }
 
-function loadContracts() {
+function loadContracts () {
     fs.readdirSync(BUILD_CONTRACTS_DIR).forEach(filename => {
         const contract = require(BUILD_CONTRACTS_DIR + filename);
 
@@ -32,7 +32,7 @@ function loadContracts() {
     });
 }
 
-function toOneFile(contractId) {
+function toOneFile (contractId) {
     const contract = contracts[contractId];
     const dependencies = getContractDependencies(contractId)
         .filter((item, pos, array) => array.indexOf(item) === pos);
@@ -53,13 +53,13 @@ function toOneFile(contractId) {
     console.info('Success, filename: ', destFilename);
 }
 
-function getContractDependencies(contractId) {
+function getContractDependencies (contractId) {
     const dependencies = [];
     const currentContractDependencies = contracts[contractId].ast.nodes
         .filter(c => c.nodeType === 'ImportDirective')
         .filter(c => {
-            if (c.unitAlias !== "" || c.symbolAliases.length > 0) {
-                throw Error(contracts[contractId].contractName + " contains aliases");
+            if (c.unitAlias !== '' || c.symbolAliases.length > 0) {
+                throw Error(contracts[contractId].contractName + ' contains aliases');
             }
             return c;
         })
@@ -71,7 +71,7 @@ function getContractDependencies(contractId) {
     return dependencies;
 }
 
-function getSourcesWithoutImportsAndPragma(contractId) {
+function getSourcesWithoutImportsAndPragma (contractId) {
     return contracts[contractId].source
         .replace(IMPORT_REGEX, '')
         .replace(PRAGMA_REGEX, '');

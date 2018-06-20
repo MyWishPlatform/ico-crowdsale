@@ -2,14 +2,13 @@ const estimateConstructGasWithValue = (target, value, ...args) => {
     return new Promise((resolve, reject) => {
         const web3contract = target.web3.eth.contract(target.abi);
         args.push({
-            data: target.unlinked_binary
+            data: target.unlinked_binary,
         });
         const constructData = web3contract.new.getData.apply(web3contract.new, args);
-        web3.eth.estimateGas({data: constructData, value: value}, function (err, gas) {
+        web3.eth.estimateGas({ data: constructData, value: value }, function (err, gas) {
             if (err) {
                 reject(err);
-            }
-            else {
+            } else {
                 resolve(gas);
             }
         });
@@ -37,5 +36,5 @@ module.exports = {
         return estimateConstructGasWithValue.apply(this, args);
     },
 
-    estimateConstructGasWithValue: estimateConstructGasWithValue
+    estimateConstructGasWithValue: estimateConstructGasWithValue,
 };

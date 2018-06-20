@@ -1,7 +1,7 @@
 const mineBlock = () => {
     return new Promise((resolve, reject) => {
         web3.currentProvider.sendAsync(
-            {jsonrpc: "2.0", method: "evm_mine", params: [], id: 0},
+            { jsonrpc: '2.0', method: 'evm_mine', params: [], id: 0 },
             function (error, result) {
                 if (error) {
                     reject(error);
@@ -21,14 +21,14 @@ module.exports = {
                     const blockTs = block.timestamp;
                     if (blockTs >= absoluteTime) {
                         if (blockTs > absoluteTime) {
-                            console.warn("Block time already is in future:", blockTs, ">", absoluteTime)
+                            console.warn('Block time already is in future:', blockTs, '>', absoluteTime);
                         }
                         resolve(true);
                     }
                     const delta = absoluteTime - blockTs;
                     return web3.currentProvider.sendAsync(
-                        [{jsonrpc: "2.0", method: "evm_increaseTime", params: [delta], id: 0},
-                            {jsonrpc: "2.0", method: "evm_mine", params: [], id: 0}],
+                        [{ jsonrpc: '2.0', method: 'evm_increaseTime', params: [delta], id: 0 },
+                            { jsonrpc: '2.0', method: 'evm_mine', params: [], id: 0 }],
                         function (error, result) {
                             if (error) {
                                 reject(error);
@@ -44,8 +44,8 @@ module.exports = {
     increaseTime: addSeconds => {
         return new Promise((resolve, reject) => {
             web3.currentProvider.sendAsync(
-                [{jsonrpc: "2.0", method: "evm_increaseTime", params: [addSeconds], id: 0},
-                    {jsonrpc: "2.0", method: "evm_mine", params: [], id: 0}],
+                [{ jsonrpc: '2.0', method: 'evm_increaseTime', params: [addSeconds], id: 0 },
+                    { jsonrpc: '2.0', method: 'evm_mine', params: [], id: 0 }],
                 function (error, result) {
                     if (error) {
                         reject(error);
@@ -59,7 +59,7 @@ module.exports = {
     snapshot: () => {
         return new Promise((resolve, reject) => {
             web3.currentProvider.sendAsync(
-                {jsonrpc: "2.0", method: "evm_snapshot", params: [], id: 0},
+                { jsonrpc: '2.0', method: 'evm_snapshot', params: [], id: 0 },
                 function (error, result) {
                     if (error) {
                         reject(error);
@@ -73,7 +73,7 @@ module.exports = {
     revert: id => {
         return new Promise((resolve, reject) => {
             web3.currentProvider.sendAsync(
-                {jsonrpc: "2.0", method: "evm_revert", params: [id], id: 0},
+                { jsonrpc: '2.0', method: 'evm_revert', params: [id], id: 0 },
                 function (error, result) {
                     if (error) {
                         reject(error);
@@ -84,5 +84,5 @@ module.exports = {
             );
         });
     },
-    mine: mineBlock
+    mine: mineBlock,
 };

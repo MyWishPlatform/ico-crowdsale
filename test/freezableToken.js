@@ -1,13 +1,13 @@
 const BigNumber = require('bignumber.js');
 
-const chai = require("chai");
-chai.use(require("chai-bignumber")(BigNumber));
-chai.use(require("chai-as-promised"));
+const chai = require('chai');
+chai.use(require('chai-bignumber')(BigNumber));
+chai.use(require('chai-as-promised'));
 chai.should();
-const {increaseTime, revert, snapshot} = require('./evmMethods');
+const { increaseTime, revert, snapshot } = require('./evmMethods');
 const utils = require('./web3Utils');
 
-const Token = artifacts.require("./FreezableMintableToken.sol");
+const Token = artifacts.require('./FreezableMintableToken.sol');
 
 const HOUR = 3600;
 const DAY = 24 * HOUR;
@@ -20,7 +20,7 @@ const initTime = (now) => {
     DAY_AFTER_TOMORROW = TOMORROW + DAY;
 };
 
-initTime(Math.ceil(new Date("2017-10-10T15:00:00Z").getTime() / 1000));
+initTime(Math.ceil(new Date('2017-10-10T15:00:00Z').getTime() / 1000));
 
 contract('Token', accounts => {
     const OWNER = accounts[0];
@@ -58,20 +58,20 @@ contract('Token', accounts => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
         await increaseTime(HOUR + 1);
-        await token.releaseOnce({from: BUYER_1});
+        await token.releaseOnce({ from: BUYER_1 });
     });
 
     it('#4 dot not release before date', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
-        await token.releaseOnce({from: BUYER_1}).should.eventually.be.rejected;
+        await token.releaseOnce({ from: BUYER_1 }).should.eventually.be.rejected;
     });
 
     it('#5 mint, freeze and release all', async () => {
         const token = await Token.new();
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR);
         await increaseTime(HOUR + 1);
-        await token.releaseAll({from: BUYER_1});
+        await token.releaseAll({ from: BUYER_1 });
     });
 
     it('#6 multi freeze', async () => {
@@ -81,7 +81,7 @@ contract('Token', accounts => {
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
 
         await increaseTime(HOUR * 3 + 1);
-        await token.releaseAll({from: BUYER_1});
+        await token.releaseAll({ from: BUYER_1 });
     });
 
     it('#7 freeze, release, freeze, releaseAll', async () => {
@@ -91,13 +91,13 @@ contract('Token', accounts => {
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
 
         await increaseTime(HOUR * 3 + 1);
-        await token.releaseOnce({from: BUYER_1});
+        await token.releaseOnce({ from: BUYER_1 });
         (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
 
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
 
         await increaseTime(HOUR);
-        await token.releaseAll({from: BUYER_1});
+        await token.releaseAll({ from: BUYER_1 });
 
         (await token.freezingCount(BUYER_1)).should.bignumber.be.zero;
     });
@@ -109,13 +109,13 @@ contract('Token', accounts => {
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
 
         await increaseTime(HOUR * 2 + 1);
-        await token.releaseAll({from: BUYER_1});
+        await token.releaseAll({ from: BUYER_1 });
         (await token.freezingCount(BUYER_1)).should.bignumber.equals(1);
 
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
 
         await increaseTime(2 * HOUR);
-        await token.releaseOnce({from: BUYER_1});
+        await token.releaseOnce({ from: BUYER_1 });
 
         (await token.freezingCount(BUYER_1)).should.bignumber.equals(1);
     });
@@ -153,7 +153,7 @@ contract('Token', accounts => {
 
         await increaseTime(HOUR + 1);
 
-        await token.releaseOnce({from:BUYER_1});
+        await token.releaseOnce({ from: BUYER_1 });
         (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
 
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 2);
@@ -171,7 +171,7 @@ contract('Token', accounts => {
 
         await increaseTime(HOUR + 1);
 
-        await token.releaseOnce({from:BUYER_1});
+        await token.releaseOnce({ from: BUYER_1 });
         (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
 
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 4);
@@ -189,7 +189,7 @@ contract('Token', accounts => {
 
         await increaseTime(HOUR + 1);
 
-        await token.releaseOnce({from:BUYER_1});
+        await token.releaseOnce({ from: BUYER_1 });
         (await token.freezingCount(BUYER_1)).should.bignumber.equals(2);
 
         await token.mintAndFreeze(BUYER_1, web3.toWei(1, 'ether'), NOW + HOUR * 3);
@@ -211,7 +211,7 @@ contract('Token', accounts => {
         String(await token.balanceOf(BUYER_1)).should.be.equals(String(web3.toWei(4, 'ether')));
 
         await increaseTime(HOUR * 3 + 1);
-        await token.releaseAll({from: BUYER_1});
+        await token.releaseAll({ from: BUYER_1 });
         String(await token.balanceOf(BUYER_1)).should.be.equals(String(web3.toWei(4, 'ether')));
     });
 });

@@ -1,7 +1,7 @@
-const ganache = require("ganache-cli");
+const ganache = require('ganache-cli');
 const to = require('./to.js');
 const utils = require('ethereumjs-util');
-const async = require("async");
+const async = require('async');
 
 StateManager.prototype.snapshot = function (callback) {
     var self = this;
@@ -11,10 +11,10 @@ StateManager.prototype.snapshot = function (callback) {
 
         self.snapshots.push({
             blockNumber: blockNumber,
-            timeAdjustment: self.blockchain.timeAdjustment
+            timeAdjustment: self.blockchain.timeAdjustment,
         });
 
-        self.logger.log("Saved snapshot #" + self.snapshots.length);
+        self.logger.log('Saved snapshot #' + self.snapshots.length);
 
         callback(null, to.hex(self.snapshots.length));
     });
@@ -26,10 +26,10 @@ StateManager.prototype.revert = function (snapshot_id, callback) {
     // Convert from hex.
     snapshot_id = utils.bufferToInt(snapshot_id);
 
-    this.logger.log("Reverting to snapshot #" + snapshot_id);
+    this.logger.log('Reverting to snapshot #' + snapshot_id);
 
     if (snapshot_id > this.snapshots.length) {
-        callback(new Error("Wrong snapshot number, max is " + (this.snapshots.length - 1)), false);
+        callback(new Error('Wrong snapshot number, max is ' + (this.snapshots.length - 1)), false);
         return false;
     }
 
@@ -39,7 +39,7 @@ StateManager.prototype.revert = function (snapshot_id, callback) {
 
     // Loop through each snapshot with a higher id than the current one.
     async.whilst(function () {
-        return self.snapshots.length > snapshot_id
+        return self.snapshots.length > snapshot_id;
     }, function (nextSnapshot) {
         var snapshot = self.snapshots.pop();
 
@@ -48,7 +48,7 @@ StateManager.prototype.revert = function (snapshot_id, callback) {
             self.blockchain.getHeight(function (err, blockNumber) {
                 if (err) return doneWithTest(err);
 
-                doneWithTest(null, blockNumber > snapshot.blockNumber)
+                doneWithTest(null, blockNumber > snapshot.blockNumber);
             });
         }, function (nextBlock) {
             self.blockchain.popBlock(function (err) {
@@ -56,8 +56,6 @@ StateManager.prototype.revert = function (snapshot_id, callback) {
                 nextBlock();
             });
         }, nextSnapshot);
-
-
     }, function (err) {
         if (err) return callback(err);
 
