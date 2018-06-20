@@ -23,6 +23,7 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         init();
         transferOwnership(TARGET_USER);
     }
+    //#endif
 
     function name() public pure returns (string _name) {
         return TOKEN_NAME;
@@ -46,6 +47,7 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         return super.transfer(_to, _value);
     }
 
+    //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
     function init() private {
         require(!initialized);
         initialized = true;
