@@ -834,5 +834,12 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.sendTransaction({from: BUYER_2, value: wei}).should.eventually.be.rejected;
         await crowdsale.sendTransaction({from: BUYER_3, value: wei}).should.eventually.be.rejected;
     });
+
+    it('#28 check whitelist 100 addresses', async () => {
+        const addresses = new Array(100).fill(accounts[0]);
+        const crowdsale = await createCrowdsale();
+        const tx = await crowdsale.addAddressesToWhitelist(addresses, { from: TARGET_USER });
+        console.info('Gas used for whitelist 100 addresses: ', tx.receipt.gasUsed);
+    });
     //#endif
 });
