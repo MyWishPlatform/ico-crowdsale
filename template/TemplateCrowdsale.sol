@@ -1,10 +1,17 @@
 pragma solidity ^0.4.21;
 
 import "zeppelin-solidity/contracts/crowdsale/CappedCrowdsale.sol";
+//#if D_SOFT_CAP_WEI != 0
 import "zeppelin-solidity/contracts/crowdsale/RefundableCrowdsale.sol";
+//#endif
 import "./MainCrowdsale.sol";
+//#if "D_AUTO_FINALISE" != "false"
 import "./Checkable.sol";
+//#endif
 import "./BonusableCrowdsale.sol";
+//#if "D_WHITELIST_ENABLED" == "true"
+import "./WhitelistedCrowdsale.sol";
+//#endif
 
 contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if "D_BONUS_TOKENS" != "false"
@@ -16,6 +23,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     , CappedCrowdsale
     //#if "D_AUTO_FINALISE" != "false"
     , Checkable
+    //#endif
+    //#if "D_WHITELIST_ENABLED" == "true"
+    , WhitelistedCrowdsale
     //#endif
 {
     event Initialized();
