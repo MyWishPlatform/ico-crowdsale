@@ -7,6 +7,14 @@
     "test": "test"
   },
   "scripts": {
+    "all-crowdsale-tests": "./scripts/all-crowdsale-tests.sh",
+    "all-token-tests": "./scripts/all-token-tests.sh",
+    "combine-crowdsale": "combine-contracts TemplateCrowdsale",
+    "combine-token": "combine-contracts MainToken",
+    "compile-crowdsale": "./scripts/compile-crowdsale.sh",
+    "compile-token": "./scripts/compile-token.sh",
+    "test-crowdsale": "./scripts/test-crowdsale.sh",
+    "test-token": "./scripts/test-token.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:sol": "solhint 'contracts/**/*.sol' 'template/**/*.sol'",
@@ -23,7 +31,8 @@
   },
   "homepage": "https://github.com/MyWishPlatform/ico-crowdsale#readme",
   "dependencies": {
-    "openzeppelin-solidity": "1.10.0"
+    "openzeppelin-solidity": "1.10.0",
+    "sc-library": "github:MyWishPlatform/sc-library#0.3.0"
   },
   "devDependencies": {
     "bignumber.js": "^4.1.0",

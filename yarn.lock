@@ -3604,6 +3604,10 @@ safe-regex@^1.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 
+"sc-library@github:MyWishPlatform/sc-library#0.3.0":
+  version "0.3.0"
+  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/64459ce9cce76007777c4bc57c566130c570ed8a"
+
 scoped-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/scoped-regex/-/scoped-regex-1.0.0.tgz#a346bb1acd4207ae70bd7c0c7ca9e566b6baddb8"

@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsa
 //#endif
 import "./MainCrowdsale.sol";
 //#if D_AUTO_FINALISE
-import "./Checkable.sol";
+import "sc-library/contracts/Checkable.sol";
 //#endif
 //#if D_BONUS_TOKENS
 import "./BonusableCrowdsale.sol";
