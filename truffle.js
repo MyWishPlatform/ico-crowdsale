@@ -1,15 +1,15 @@
-const ether = 10 ** 18;
-const ganache = require('ganache-cli');
-require('./utils/revertTime.js');
+const ganache = require('ganache-core');
+const BigNumber = require('bignumber.js');
+
+BigNumber.config({ EXPONENTIAL_AT: 100 });
 
 module.exports = {
     networks: {
         ganache: {
-            network_id: '*',
+            network_id: '*', // eslint-disable-line camelcase
             provider: ganache.provider({
-                accounts: [10 ** 100, 10 ** 100, 10 ** 100, 10 ** 100, 0, 1].map(function (v) {
-                    return { balance: v * ether };
-                }),
+                total_accounts: 6, // eslint-disable-line camelcase
+                default_balance_ether: BigNumber(1e+99), // eslint-disable-line camelcase
                 mnemonic: 'mywish',
                 time: new Date('2017-10-10T15:00:00Z'),
                 debug: false,
@@ -19,7 +19,7 @@ module.exports = {
         localhost: {
             host: 'localhost',
             port: 8545,
-            network_id: '*', // Match any network id
+            network_id: '*', // eslint-disable-line camelcase
         },
     },
     solc: {

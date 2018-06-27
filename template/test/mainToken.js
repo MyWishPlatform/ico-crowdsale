@@ -1,10 +1,12 @@
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
-chai.should();
+const BigNumber = web3.BigNumber;
 
-const { increaseTime, revert, snapshot } = require('./evmMethods');
-const utils = require('./web3Utils');
+require('chai')
+    .use(require('chai-bignumber')(BigNumber))
+    .use(require('chai-as-promised'))
+    .should();
+
+const { revert, snapshot } = require('sc-library/scripts/evmMethods');
+const { estimateConstructGas } = require('sc-library/scripts/web3Utils');
 
 const Token = artifacts.require('./MainToken.sol');
 //#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN
@@ -14,36 +16,19 @@ const SuccessfulERC223Receiver = artifacts.require('./SuccessfulERC223Receiver.s
 const FailingERC223Receiver = artifacts.require('./FailingERC223Receiver.sol');
 const ERC223ReceiverWithoutTokenFallback = artifacts.require('./ERC223ReceiverWithoutTokenFallback.sol');
 
-const DAY = 24 * 3600;
-
-let NOW, TOMORROW, DAY_AFTER_TOMORROW;
-
-const initTime = (now) => {
-    NOW = now;
-    TOMORROW = now + DAY;
-    DAY_AFTER_TOMORROW = TOMORROW + DAY;
-};
-
 //#if D_PREMINT_COUNT > 0
-String.prototype.extractBigNumber = function () {
-    return new web3.BigNumber(this.match(/\((\d+)\)/)[1]);
-};
+const extractBigNumber = (string) => new BigNumber(string.match(/\((\d+)\)/)[1]);
 
 const premintAddresses = 'D_PREMINT_ADDRESSES'.split(',')
     .map(s => s.match(/\((\w+)\)/)[1]);
 
 const premintAmounts = 'D_PREMINT_AMOUNTS'.split(',')
-    .map(s => s.extractBigNumber());
-
-const premintFreezes = 'D_PREMINT_FREEZES'.split(',')
-    .map(s => s.extractBigNumber());
+    .map(s => extractBigNumber(s));
 //#endif
 
 contract('Token', accounts => {
     const OWNER = accounts[0];
     const BUYER_1 = accounts[1];
-    const BUYER_2 = accounts[2];
-    const RICH_MAN = accounts[3];
     const TARGET_USER = accounts[5];
 
     let TOKEN_OWNER = OWNER;
@@ -55,9 +40,6 @@ contract('Token', accounts => {
 
     beforeEach(async () => {
         snapshotId = (await snapshot()).result;
-        const block = await utils.web3async(web3.eth, web3.eth.getBlock, 'latest');
-        const blockTime = block.timestamp;
-        initTime(blockTime);
     });
 
     afterEach(async () => {
@@ -65,8 +47,7 @@ contract('Token', accounts => {
     });
 
     it('#0 gas usage', async () => {
-        await utils.estimateConstructGas(Token)
-            .then(console.info);
+        await estimateConstructGas(Token).then(console.info);
     });
 
     it('#0 3/4 precheck', async () => {
@@ -76,7 +57,7 @@ contract('Token', accounts => {
     it('#1 construct', async () => {
         const token = await Token.new();
         token.address.should.have.length(42);
-        (await token.owner()).should.be.equals(TOKEN_OWNER);
+        await token.owner().should.eventually.be.equals(TOKEN_OWNER);
     });
 
     //#if !D_CONTINUE_MINTING && defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
@@ -93,7 +74,7 @@ contract('Token', accounts => {
         const tokensToMint = web3.toWei(1, 'ether');
         await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER });
         const balance = await token.balanceOf(BUYER_1);
-        balance.toString().should.be.equals(tokensToMint.toString());
+        balance.should.bignumber.be.equals(tokensToMint);
     });
 
     it('#3 minting after it finished', async () => {
@@ -125,7 +106,7 @@ contract('Token', accounts => {
         await token.transfer(receiver.address, tokensToTransfer, { from: BUYER_1 });
 
         const balance = await token.balanceOf(receiver.address);
-        balance.toString().should.be.equals(tokensToTransfer.toString());
+        balance.should.bignumber.be.equals(tokensToTransfer);
     });
 
     it('#6 erc223 transfer should fail on contract receiver with failing tokenFallback function', async () => {
@@ -138,7 +119,7 @@ contract('Token', accounts => {
         await token.transfer(failingReceiver.address, tokensToTransfer, { from: BUYER_1 })
             .should.eventually.be.rejected;
 
-        (await token.balanceOf(failingReceiver.address)).should.be.zero;
+        await token.balanceOf(failingReceiver.address).should.eventually.be.zero;
     });
 
     it('#7 erc223 transfer should fail on contract without tokenFallback function', async () => {
@@ -151,7 +132,7 @@ contract('Token', accounts => {
         await token.transfer(failingReceiver.address, tokensToTransfer, { from: BUYER_1 })
             .should.eventually.be.rejected;
 
-        (await token.balanceOf(failingReceiver.address)).should.be.zero;
+        await token.balanceOf(failingReceiver.address).should.eventually.be.zero;
     });
     //#endif
     //#endif
@@ -172,8 +153,8 @@ contract('Token', accounts => {
                 : map[premintAddresses[i]].add(premintAmounts[i]);
         }
 
-        await Promise.all(Object.keys(map).map(async (key, index) => {
-            String(await token.balanceOf(key)).should.be.equals(String(map[key]));
+        await Promise.all(Object.keys(map).map(async (key) => {
+            (await token.balanceOf(key)).should.bignumber.be.equals(map[key]);
         }));
     });
     //#endif
