@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./ERC223Receiver.sol";
+import "sc-library/contracts/ERC223/ERC223Receiver.sol";
 
 
 contract SuccessfulERC223Receiver is ERC223Receiver {
