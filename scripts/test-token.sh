@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 CONFIG=$1
 CONFIG="${CONFIG:-c-preprocessor-config.json}"
-source templated-tests/test-token-template.sh "$CONFIG"
+source $(dirname "$0")/templated-tests/test-token-template.sh "$CONFIG"
