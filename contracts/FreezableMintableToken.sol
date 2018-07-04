@@ -1,8 +1,8 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-
-import "zeppelin-solidity/contracts/token/MintableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "./FreezableToken.sol";
+
 
 contract FreezableMintableToken is FreezableToken, MintableToken {
     /**
@@ -14,8 +14,8 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
      * @param _until Release date, must be in future.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mintAndFreeze(address _to, uint _amount, uint64 _until) onlyOwner canMint public returns (bool) {
-        totalSupply = totalSupply.add(_amount);
+    function mintAndFreeze(address _to, uint _amount, uint64 _until) public onlyOwner canMint returns (bool) {
+        totalSupply_ = totalSupply_.add(_amount);
 
         bytes32 currentKey = toKey(_to, _until);
         freezings[currentKey] = freezings[currentKey].add(_amount);

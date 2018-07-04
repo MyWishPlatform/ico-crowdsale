@@ -1,7 +1,6 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-
-import "zeppelin-solidity/contracts/token/StandardToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
 
 contract FreezableToken is StandardToken {
@@ -14,7 +13,6 @@ contract FreezableToken is StandardToken {
 
     event Freezed(address indexed to, uint64 release, uint amount);
     event Released(address indexed owner, uint amount);
-
 
     /**
      * @dev Gets the balance of the specified address include freezing tokens.
@@ -45,7 +43,7 @@ contract FreezableToken is StandardToken {
     function freezingCount(address _addr) public view returns (uint count) {
         uint64 release = chains[toKey(_addr, 0)];
         while (release != 0) {
-            count ++;
+            count++;
             release = chains[toKey(_addr, release)];
         }
     }
@@ -56,7 +54,7 @@ contract FreezableToken is StandardToken {
      * @param _index Freezing portion index. It ordered by release date descending.
      */
     function getFreezing(address _addr, uint _index) public view returns (uint64 _release, uint _balance) {
-        for (uint i = 0; i < _index + 1; i ++) {
+        for (uint i = 0; i < _index + 1; i++) {
             _release = chains[toKey(_addr, _release)];
             if (_release == 0) {
                 return;
@@ -108,8 +106,7 @@ contract FreezableToken is StandardToken {
 
         if (next == 0) {
             delete chains[headKey];
-        }
-        else {
+        } else {
             chains[headKey] = next;
             delete chains[currentKey];
         }

@@ -1,7 +1,8 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
 
 contract WhitelistedCrowdsale is Crowdsale, Ownable {
     mapping (address => bool) private whitelist;
@@ -16,21 +17,6 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     modifier onlyIfWhitelisted(address _buyer) {
         require(whitelist[_buyer]);
         _;
-    }
-
-    /**
-     * @dev getter to determine if address is in whitelist
-     */
-    function isWhitelisted(address _address) public view returns (bool) {
-        return whitelist[_address];
-    }
-
-    /**
-     * @dev override purchase validation to add extra value logic.
-     * @return true if sender is whitelisted
-     */
-    function validPurchase() internal view onlyIfWhitelisted(msg.sender) returns (bool) {
-        return super.validPurchase();
     }
 
     /**
@@ -67,5 +53,27 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
             delete whitelist[_addresses[i]];
             emit WhitelistedAddressRemoved(_addresses[i]);
         }
+    }
+
+    /**
+     * @dev getter to determine if address is in whitelist
+     */
+    function isWhitelisted(address _address) public view returns (bool) {
+        return whitelist[_address];
+    }
+
+    /**
+     * @dev Extend parent behavior requiring beneficiary to be in whitelist.
+     * @param _beneficiary Token beneficiary
+     * @param _weiAmount Amount of wei contributed
+     */
+    function _preValidatePurchase(
+        address _beneficiary,
+        uint256 _weiAmount
+    )
+        internal
+        onlyIfWhitelisted(_beneficiary)
+    {
+        super._preValidatePurchase(_beneficiary, _weiAmount);
     }
 }

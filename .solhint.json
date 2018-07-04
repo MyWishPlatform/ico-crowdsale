@@ -1,0 +1,7 @@
+{
+  "extends": "default",
+  "rules": {
+    "compiler-fixed": false,
+    "no-inline-assembly": false
+  }
+}

@@ -1,13 +1,14 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/token/MintableToken.sol";
-import "zeppelin-solidity/contracts/token/BurnableToken.sol";
-import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
+//#if "D_ERC" == "ERC223"
+import "sc-library/contracts/ERC223/ERC223Token.sol";
+//#endif
 import "./FreezableMintableToken.sol";
 import "./Consts.sol";
-//#if "D_ERC" == "ERC223"
-import "./ERC223Token.sol";
-//#endif
+
 
 contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     //#if "D_ERC" == "ERC223"
@@ -18,11 +19,35 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     event Initialized();
     bool public initialized = false;
 
-    function MainToken() public {
+    constructor() public {
         init();
         transferOwnership(TARGET_USER);
     }
+    //#endif
 
+    function name() public pure returns (string _name) {
+        return TOKEN_NAME;
+    }
+
+    function symbol() public pure returns (string _symbol) {
+        return TOKEN_SYMBOL;
+    }
+
+    function decimals() public pure returns (uint8 _decimals) {
+        return TOKEN_DECIMALS_UINT8;
+    }
+
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool _success) {
+        require(!paused);
+        return super.transferFrom(_from, _to, _value);
+    }
+
+    function transfer(address _to, uint256 _value) public returns (bool _success) {
+        require(!paused);
+        return super.transfer(_to, _value);
+    }
+
+    //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true
     function init() private {
         require(!initialized);
         initialized = true;
@@ -52,26 +77,4 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         emit Initialized();
     }
     //#endif
-
-    function name() pure public returns (string _name) {
-        return TOKEN_NAME;
-    }
-
-    function symbol() pure public returns (string _symbol) {
-        return TOKEN_SYMBOL;
-    }
-
-    function decimals() pure public returns (uint8 _decimals) {
-        return TOKEN_DECIMALS_UINT8;
-    }
-
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool _success) {
-        require(!paused);
-        return super.transferFrom(_from, _to, _value);
-    }
-
-    function transfer(address _to, uint256 _value) public returns (bool _success) {
-        require(!paused);
-        return super.transfer(_to, _value);
-    }
 }
