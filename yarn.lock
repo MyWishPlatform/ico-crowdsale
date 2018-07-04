@@ -3856,7 +3856,7 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@~5.1.0, 
 
 "sc-library@github:MyWishPlatform/sc-library#feature/erc223-mintable":
   version "0.5.0"
-  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/0eedb14df7bcb16edc8a12ed6a8fc1e812956fd5"
+  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/14843ad14e0829536324383bd53f3859b2d6fb5c"
   dependencies:
     openzeppelin-solidity "1.10.0"
 
