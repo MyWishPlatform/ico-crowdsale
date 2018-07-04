@@ -5,8 +5,8 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const { revert, snapshot } = require('sc-library/scripts/evmMethods');
-const { estimateConstructGas } = require('sc-library/scripts/web3Utils');
+const { revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { estimateConstructGas } = require('sc-library/test-utils/web3Utils');
 
 const Token = artifacts.require('./MainToken.sol');
 //#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN

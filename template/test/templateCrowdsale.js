@@ -5,8 +5,8 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const { timeTo, increaseTime, revert, snapshot } = require('sc-library/scripts/evmMethods');
-const { web3async, estimateConstructGas } = require('sc-library/scripts/web3Utils');
+const { timeTo, increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { web3async, estimateConstructGas } = require('sc-library/test-utils/web3Utils');
 
 const Crowdsale = artifacts.require('./TemplateCrowdsale.sol');
 const Token = artifacts.require('./MainToken.sol');

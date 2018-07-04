@@ -5,8 +5,8 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const { increaseTime, revert, snapshot } = require('sc-library/scripts/evmMethods');
-const { web3async } = require('sc-library/scripts/web3Utils');
+const { increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { web3async } = require('sc-library/test-utils/web3Utils');
 
 const Token = artifacts.require('./FreezableMintableToken.sol');
 
