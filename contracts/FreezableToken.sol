@@ -133,7 +133,7 @@ contract FreezableToken is StandardToken {
         result = 0x5749534800000000000000000000000000000000000000000000000000000000;
         assembly {
             result := or(result, mul(_addr, 0x10000000000000000))
-            result := or(result, _release)
+            result := or(result, and(_release, 0xffffffffffffffff))
         }
     }
 
