@@ -15,6 +15,7 @@
     "compile-token": "./scripts/compile-token.sh",
     "test-crowdsale": "./scripts/test-crowdsale.sh",
     "test-token": "./scripts/test-token.sh",
+    "fix-erc20": "./scripts/fix-erc20.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:sol": "solhint 'contracts/**/*.sol' 'template/**/*.sol'",

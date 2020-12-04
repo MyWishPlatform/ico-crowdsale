@@ -9,3 +9,4 @@ test/templateCrowdsale.js
 source $(dirname "$0")/templated-tests/preprocess-token-template.sh $1
 node_modules/.bin/truffle compile --all
 yarn combine-token
+yarn fix-erc20
