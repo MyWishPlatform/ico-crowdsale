@@ -3854,9 +3854,10 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@~5.1.0, 
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 
-"sc-library@github:MyWishPlatform/sc-library#feature/erc223-mintable":
-  version "0.5.0"
-  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/14843ad14e0829536324383bd53f3859b2d6fb5c"
+"sc-library@github:MyWishPlatform/sc-library#0.7.2":
+  version "0.7.2"
+  uid c36a999d47c3a8d626de60b7033eeb55f35134b4
+  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/c36a999d47c3a8d626de60b7033eeb55f35134b4"
   dependencies:
     openzeppelin-solidity "1.10.0"
 
@@ -4917,8 +4918,8 @@ xtend@~3.0.0:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-3.0.0.tgz#5cce7407baf642cba7becda568111c493f59665a"
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
 
 yaeti@^0.0.6:
   version "0.0.6"
