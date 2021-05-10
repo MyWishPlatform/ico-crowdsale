@@ -2435,8 +2435,8 @@ home-or-tmp@^2.0.0:
     os-tmpdir "^1.0.1"
 
 hosted-git-info@^2.1.4:
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.1.tgz#6e4cee78b01bb849dcf93527708c69fdbee410df"
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
 
 http-errors@1.6.2:
   version "1.6.2"
@@ -3854,9 +3854,10 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@~5.1.0, 
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 
-"sc-library@github:MyWishPlatform/sc-library#feature/erc223-mintable":
-  version "0.5.0"
-  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/14843ad14e0829536324383bd53f3859b2d6fb5c"
+"sc-library@github:MyWishPlatform/sc-library#0.7.2":
+  version "0.7.2"
+  uid c36a999d47c3a8d626de60b7033eeb55f35134b4
+  resolved "https://codeload.github.com/MyWishPlatform/sc-library/tar.gz/c36a999d47c3a8d626de60b7033eeb55f35134b4"
   dependencies:
     openzeppelin-solidity "1.10.0"
 
