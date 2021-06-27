@@ -1,16 +1,17 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "openzeppelin-solidity/contracts/crowdsale/distribution/FinalizableCrowdsale.sol";
-import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
-import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "dependencies/crowdsale/distribution/FinalizableCrowdsale.sol";
+import "dependencies/crowdsale/validation/CappedCrowdsale.sol";
+import "dependencies/crowdsale/emission/MintedCrowdsale.sol";
+import "dependencies/MintableToken.sol";
 import "./MainToken.sol";
 import "./Consts.sol";
 
 
-contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedCrowdsale {
+abstract contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedCrowdsale {
     function hasStarted() public view returns (bool) {
-        return now >= openingTime;
+        return block.timestamp >= openingTime;
     }
 
     function startTime() public view returns (uint256) {
@@ -21,7 +22,7 @@ contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedC
         return closingTime;
     }
 
-    function hasClosed() public view returns (bool) {
+    function hasClosed() public virtual override view returns (bool) {
         return super.hasClosed() || capReached();
     }
 
@@ -29,18 +30,14 @@ contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedC
         return hasClosed();
     }
 
-    function finalization() internal {
+    function finalization() internal override {
         super.finalization();
 
-        if (PAUSED) {
-            MainToken(token).unpause();
-        }
-
         if (!CONTINUE_MINTING) {
-            require(MintableToken(token).finishMinting());
+            require(MintableToken(address(token)).finishMinting());
         }
 
-        Ownable(token).transferOwnership(TARGET_USER);
+        Ownable(address(token)).transferOwnership(TARGET_USER);
     }
 
     /**
@@ -49,8 +46,16 @@ contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale, CappedC
      * @return Number of tokens that can be purchased with the specified _weiAmount
      */
     function _getTokenAmount(uint256 _weiAmount)
-        internal view returns (uint256)
+        internal override view returns (uint256)
     {
-        return _weiAmount.mul(rate).div(1 ether);
+        return (_weiAmount * rate) / (1 ether);
+    }
+
+    function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal virtual override(Crowdsale, MintedCrowdsale) {
+        MintedCrowdsale._deliverTokens(_beneficiary, _tokenAmount);
+    }
+
+    function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal virtual override(Crowdsale, CappedCrowdsale,TimedCrowdsale) onlyWhileOpen{
+        CappedCrowdsale._preValidatePurchase(_beneficiary, _weiAmount);
     }
 }

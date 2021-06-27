@@ -1,20 +1,21 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
+import "dependencies/crowdsale/Crowdsale.sol";
 import "./Consts.sol";
 
 
-contract BonusableCrowdsale is Consts, Crowdsale {
+abstract contract BonusableCrowdsale is Consts, Crowdsale {
     /**
      * @dev Override to extend the way in which ether is converted to tokens.
      * @param _weiAmount Value in wei to be converted into tokens
      * @return Number of tokens that can be purchased with the specified _weiAmount
      */
     function _getTokenAmount(uint256 _weiAmount)
-        internal view returns (uint256)
+        internal view override returns (uint256)
     {
         uint256 bonusRate = getBonusRate(_weiAmount);
-        return _weiAmount.mul(bonusRate).div(1 ether);
+        return (_weiAmount * bonusRate) / (1 ether);
     }
 
     function getBonusRate(uint256 _weiAmount) internal view returns (uint256) {
@@ -30,7 +31,7 @@ contract BonusableCrowdsale is Consts, Crowdsale {
 
         for (uint i = 0; i < D_WEI_RAISED_AND_TIME_BONUS_COUNT; i++) {
             bool weiRaisedInBound = (weiRaisedStartsBounds[i] <= weiRaised) && (weiRaised < weiRaisedEndsBounds[i]);
-            bool timeInBound = (timeStartsBounds[i] <= now) && (now < timeEndsBounds[i]);
+            bool timeInBound = (timeStartsBounds[i] <= block.timestamp) && (block.timestamp < timeEndsBounds[i]);
             if (weiRaisedInBound && timeInBound) {
                 bonusRate += bonusRate * weiRaisedAndTimeRates[i] / 1000;
             }

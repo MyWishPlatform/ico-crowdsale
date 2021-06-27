@@ -1,9 +1,10 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
-contract FreezableToken is StandardToken {
+abstract contract FreezableToken is ERC20 {
     // freezing chains
     mapping (bytes32 => uint64) internal chains;
     // freezing amounts for each chain
@@ -14,16 +15,16 @@ contract FreezableToken is StandardToken {
     event Freezed(address indexed to, uint64 release, uint amount);
     event Released(address indexed owner, uint amount);
 
-    /**
+    /*
      * @dev Gets the balance of the specified address include freezing tokens.
      * @param _owner The address to query the the balance of.
      * @return An uint256 representing the amount owned by the passed address.
      */
-    function balanceOf(address _owner) public view returns (uint256 balance) {
+    function balanceOf(address _owner) public view virtual override returns (uint256 balance) {
         return super.balanceOf(_owner) + freezingBalance[_owner];
     }
 
-    /**
+    /*
      * @dev Gets the balance of the specified address without freezing tokens.
      * @param _owner The address to query the the balance of.
      * @return An uint256 representing the amount owned by the passed address.
@@ -57,7 +58,7 @@ contract FreezableToken is StandardToken {
         for (uint i = 0; i < _index + 1; i++) {
             _release = chains[toKey(_addr, _release)];
             if (_release == 0) {
-                return;
+                return(0,0);
             }
         }
         _balance = freezings[toKey(_addr, _release)];
@@ -73,13 +74,13 @@ contract FreezableToken is StandardToken {
      */
     function freezeTo(address _to, uint _amount, uint64 _until) public {
         require(_to != address(0));
-        require(_amount <= balances[msg.sender]);
+        require(_amount <= super.balanceOf(msg.sender));
 
-        balances[msg.sender] = balances[msg.sender].sub(_amount);
+        _burn(msg.sender, _amount);
 
         bytes32 currentKey = toKey(_to, _until);
-        freezings[currentKey] = freezings[currentKey].add(_amount);
-        freezingBalance[_to] = freezingBalance[_to].add(_amount);
+        freezings[currentKey] = freezings[currentKey] + _amount;
+        freezingBalance[_to] = freezingBalance[_to] + _amount;
 
         freeze(_to, _until);
         emit Transfer(msg.sender, _to, _amount);
@@ -101,8 +102,8 @@ contract FreezableToken is StandardToken {
         uint amount = freezings[currentKey];
         delete freezings[currentKey];
 
-        balances[msg.sender] = balances[msg.sender].add(amount);
-        freezingBalance[msg.sender] = freezingBalance[msg.sender].sub(amount);
+        _mint(msg.sender, amount);
+        freezingBalance[msg.sender] = freezingBalance[msg.sender] - amount;
 
         if (next == 0) {
             delete chains[headKey];
@@ -113,7 +114,7 @@ contract FreezableToken is StandardToken {
         emit Released(msg.sender, amount);
     }
 
-    /**
+    /*
      * @dev release all available for release freezing tokens. Gas usage is not deterministic!
      * @return how many tokens was released
      */

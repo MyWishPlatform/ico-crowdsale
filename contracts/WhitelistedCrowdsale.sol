@@ -1,10 +1,11 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "dependencies/crowdsale/Crowdsale.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
-contract WhitelistedCrowdsale is Crowdsale, Ownable {
+abstract contract WhitelistedCrowdsale is Crowdsale, Ownable {
     mapping (address => bool) private whitelist;
 
     event WhitelistedAddressAdded(address indexed _address);
@@ -30,7 +31,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     /**
      * @dev add addresses to whitelist
      */
-    function addAddressesToWhitelist(address[] _addresses) external onlyOwner {
+    function addAddressesToWhitelist(address[] calldata _addresses) external onlyOwner {
         for (uint i = 0; i < _addresses.length; i++) {
             whitelist[_addresses[i]] = true;
             emit WhitelistedAddressAdded(_addresses[i]);
@@ -48,7 +49,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
     /**
      * @dev remove addresses from whitelist
      */
-    function removeAddressesFromWhitelist(address[] _addresses) external onlyOwner {
+    function removeAddressesFromWhitelist(address[] calldata _addresses) external onlyOwner {
         for (uint i = 0; i < _addresses.length; i++) {
             delete whitelist[_addresses[i]];
             emit WhitelistedAddressRemoved(_addresses[i]);
@@ -71,7 +72,7 @@ contract WhitelistedCrowdsale is Crowdsale, Ownable {
         address _beneficiary,
         uint256 _weiAmount
     )
-        internal
+        internal virtual override
         onlyIfWhitelisted(_beneficiary)
     {
         super._preValidatePurchase(_beneficiary, _weiAmount);

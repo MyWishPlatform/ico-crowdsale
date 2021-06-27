@@ -1,8 +1,8 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
-import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
+import "dependencies/MintableToken.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 //#if "D_ERC" == "ERC223"
 import "sc-library/contracts/ERC223/ERC223MintableToken.sol";
 //#endif
@@ -10,7 +10,7 @@ import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 
 
-contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
+abstract contract MainToken is Consts, FreezableMintableToken, ERC20Burnable
     //#if "D_ERC" == "ERC223"
     , ERC223MintableToken
     //#endif
@@ -25,26 +25,20 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     }
     //#endif
 
-    function name() public pure returns (string _name) {
+    function name() public pure override returns (string memory _name) {
         return TOKEN_NAME;
     }
 
-    function symbol() public pure returns (string _symbol) {
+    function symbol() public pure override returns (string memory _symbol) {
         return TOKEN_SYMBOL;
     }
 
-    function decimals() public pure returns (uint8 _decimals) {
+    function decimals() public pure override returns (uint8 _decimals) {
         return TOKEN_DECIMALS_UINT8;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool _success) {
-        require(!paused);
-        return super.transferFrom(_from, _to, _value);
-    }
-
-    function transfer(address _to, uint256 _value) public returns (bool _success) {
-        require(!paused);
-        return super.transfer(_to, _value);
+    function balanceOf(address account) public view override(ERC20, FreezableMintableToken) returns (uint256 balance) {
+        return FreezableMintableToken.balanceOf(account);
     }
 
     //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true

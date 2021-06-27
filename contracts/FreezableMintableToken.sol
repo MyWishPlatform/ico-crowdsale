@@ -1,10 +1,11 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "dependencies/MintableToken.sol";
 import "./FreezableToken.sol";
 
 
-contract FreezableMintableToken is FreezableToken, MintableToken {
+abstract contract FreezableMintableToken is FreezableToken, MintableToken {
     /**
      * @dev Mint the specified amount of token to the specified address and freeze it until the specified date.
      *      Be careful, gas usage is not deterministic,
@@ -15,16 +16,19 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
      * @return A boolean that indicates if the operation was successful.
      */
     function mintAndFreeze(address _to, uint _amount, uint64 _until) public onlyOwner canMint returns (bool) {
-        totalSupply_ = totalSupply_.add(_amount);
 
         bytes32 currentKey = toKey(_to, _until);
-        freezings[currentKey] = freezings[currentKey].add(_amount);
-        freezingBalance[_to] = freezingBalance[_to].add(_amount);
+        freezings[currentKey] = freezings[currentKey] + _amount;
+        freezingBalance[_to] = freezingBalance[_to] + _amount;
 
         freeze(_to, _until);
         emit Mint(_to, _amount);
         emit Freezed(_to, _until, _amount);
         emit Transfer(msg.sender, _to, _amount);
         return true;
+    }
+
+    function balanceOf(address _owner) public view virtual override(ERC20, FreezableToken) returns (uint256 balance) {
+        return FreezableToken.balanceOf(_owner);
     }
 }

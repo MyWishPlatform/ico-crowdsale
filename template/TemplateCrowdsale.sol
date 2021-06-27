@@ -1,11 +1,12 @@
-pragma solidity ^0.4.23;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
 //#if D_SOFT_CAP_WEI != 0
-import "openzeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
+import "dependencies/crowdsale/distribution/RefundableCrowdsale.sol";
 //#endif
 import "./MainCrowdsale.sol";
 //#if D_AUTO_FINALISE
-import "sc-library/contracts/Checkable.sol";
+import "../dependencies/sc-library/contracts/Checkable.sol";
 //#endif
 //#if D_BONUS_TOKENS
 import "./BonusableCrowdsale.sol";
@@ -33,9 +34,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     event TimesChanged(uint startTime, uint endTime, uint oldStartTime, uint oldEndTime);
     bool public initialized = false;
 
-    constructor(MintableToken _token) public
+    constructor(MintableToken _token) 
         Crowdsale(D_RATE * TOKEN_DECIMAL_MULTIPLIER, D_COLD_WALLET, _token)
-        TimedCrowdsale(START_TIME > now ? START_TIME : now, D_END_TIME)
+        TimedCrowdsale(START_TIME > block.timestamp ? START_TIME : block.timestamp, D_END_TIME)
         CappedCrowdsale(D_HARD_CAP_WEI)
         //#if D_SOFT_CAP_WEI != 0
         RefundableCrowdsale(D_SOFT_CAP_WEI)
@@ -47,10 +48,6 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         require(!initialized);
         initialized = true;
 
-        if (PAUSED) {
-            MainToken(token).pause();
-        }
-
         //#if D_PREMINT_COUNT > 0
         address[D_PREMINT_COUNT] memory addresses = [D_PREMINT_ADDRESSES];
         uint[D_PREMINT_COUNT] memory amounts = [D_PREMINT_AMOUNTS];
@@ -58,9 +55,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
 
         for (uint i = 0; i < addresses.length; i++) {
             if (freezes[i] == 0) {
-                MainToken(token).mint(addresses[i], amounts[i]);
+                MainToken(address(token)).mint(addresses[i], amounts[i]);
             } else {
-                MainToken(token).mintAndFreeze(addresses[i], amounts[i], freezes[i]);
+                MainToken(address(token)).mintAndFreeze(addresses[i], amounts[i], freezes[i]);
             }
         }
         //#endif
@@ -75,8 +72,8 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      * @dev override hasClosed to add minimal value logic
      * @return true if remained to achieve less than minimal
      */
-    function hasClosed() public view returns (bool) {
-        bool remainValue = cap.sub(weiRaised) < D_MIN_VALUE_WEI;
+    function hasClosed() public override(MainCrowdsale, TimedCrowdsale) view returns (bool) {
+        bool remainValue = (cap - weiRaised) < D_MIN_VALUE_WEI;
         return super.hasClosed() || remainValue;
     }
     //#endif
@@ -84,7 +81,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if D_CAN_CHANGE_START_TIME == true
     function setStartTime(uint _startTime) public onlyOwner {
         // only if CS was not started
-        require(now < openingTime);
+        require(block.timestamp < openingTime);
         // only move time to future
         require(_startTime > openingTime);
         require(_startTime < closingTime);
@@ -96,9 +93,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     //#if D_CAN_CHANGE_END_TIME == true
     function setEndTime(uint _endTime) public onlyOwner {
         // only if CS was not ended
-        require(now < closingTime);
+        require(block.timestamp < closingTime);
         // only if new end time in future
-        require(now < _endTime);
+        require(block.timestamp < _endTime);
         require(_endTime > openingTime);
         emit TimesChanged(openingTime, _endTime, openingTime, closingTime);
         closingTime = _endTime;
@@ -112,9 +109,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         uint oldEndTime = closingTime;
         bool changed = false;
         if (_startTime != oldStartTime) {
-            require(_startTime > now);
+            require(_startTime > block.timestamp);
             // only if CS was not started
-            require(now < oldStartTime);
+            require(block.timestamp < oldStartTime);
             // only move time to future
             require(_startTime > oldStartTime);
 
@@ -123,9 +120,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         }
         if (_endTime != oldEndTime) {
             // only if CS was not ended
-            require(now < oldEndTime);
+            require(block.timestamp < oldEndTime);
             // end time in future
-            require(now < _endTime);
+            require(block.timestamp < _endTime);
 
             closingTime = _endTime;
             changed = true;
@@ -142,7 +139,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      * @dev Do inner check.
      * @return bool true of accident triggered, false otherwise.
      */
-    function internalCheck() internal returns (bool) {
+    function internalCheck() internal override returns (bool) {
         bool result = !isFinalized && hasClosed();
         emit Checked(result);
         return result;
@@ -151,7 +148,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     /**
      * @dev Do inner action if check was success.
      */
-    function internalAction() internal {
+    function internalAction() internal override {
         finalization();
         emit Finalized();
 
@@ -168,7 +165,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         address _beneficiary,
         uint256 _weiAmount
     )
-        internal
+        internal override(Crowdsale,MainCrowdsale,TimedCrowdsale,WhitelistedCrowdsale)
     {
         //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
         require(msg.value >= D_MIN_VALUE_WEI);
@@ -179,4 +176,8 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         super._preValidatePurchase(_beneficiary, _weiAmount);
     }
     //#endif
+
+    function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal override(Crowdsale, MainCrowdsale) {
+        MainCrowdsale._deliverTokens(_beneficiary, _tokenAmount);
+    }
 }
