@@ -46,9 +46,6 @@ abstract contract MainToken is Consts, FreezableMintableToken, ERC20Burnable
         require(!initialized);
         initialized = true;
 
-        if (PAUSED) {
-            pause();
-        }
 
         //#if D_PREMINT_COUNT > 0
         address[D_PREMINT_COUNT] memory addresses = [D_PREMINT_ADDRESSES];
