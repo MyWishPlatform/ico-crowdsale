@@ -30,7 +30,7 @@ abstract contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale
         return hasClosed();
     }
 
-    function finalization() internal override {
+    function finalization() internal override virtual {
         super.finalization();
 
         if (!CONTINUE_MINTING) {
@@ -46,7 +46,7 @@ abstract contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale
      * @return Number of tokens that can be purchased with the specified _weiAmount
      */
     function _getTokenAmount(uint256 _weiAmount)
-        internal override view returns (uint256)
+        internal override virtual view returns (uint256)
     {
         return (_weiAmount * rate) / (1 ether);
     }

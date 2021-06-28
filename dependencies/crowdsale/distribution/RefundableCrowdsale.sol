@@ -1,10 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-
 import "./FinalizableCrowdsale.sol";
 import "dependencies/crowdsale/distribution/utils/RefundVault.sol";
-
 
 /**
  * @title RefundableCrowdsale
@@ -13,59 +11,57 @@ import "dependencies/crowdsale/distribution/utils/RefundVault.sol";
  * Uses a RefundVault as the crowdsale's vault.
  */
 abstract contract RefundableCrowdsale is FinalizableCrowdsale {
+    // minimum amount of funds to be raised in weis
+    uint256 public goal;
 
-  // minimum amount of funds to be raised in weis
-  uint256 public goal;
+    // refund vault used to hold funds while crowdsale is running
+    RefundVault public vault;
 
-  // refund vault used to hold funds while crowdsale is running
-  RefundVault public vault;
-
-  /**
-   * @dev Constructor, creates RefundVault.
-   * @param _goal Funding goal
-   */
-  constructor(uint256 _goal) {
-    require(_goal > 0);
-    vault = new RefundVault(wallet);
-    goal = _goal;
-  }
-
-  /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
-
-    vault.refund(msg.sender);
-  }
-
-  /**
-   * @dev Checks whether funding goal was reached.
-   * @return Whether funding goal was reached
-   */
-  function goalReached() public view returns (bool) {
-    return weiRaised >= goal;
-  }
-
-  /**
-   * @dev vault finalization task, called when owner calls finalize()
-   */
-  function finalization() internal override {
-    if (goalReached()) {
-      vault.close();
-    } else {
-      vault.enableRefunds();
+    /**
+     * @dev Constructor, creates RefundVault.
+     * @param _goal Funding goal
+     */
+    constructor(uint256 _goal) {
+        require(_goal > 0);
+        vault = new RefundVault(wallet);
+        goal = _goal;
     }
 
-    super.finalization();
-  }
+    /**
+     * @dev Investors can claim refunds here if crowdsale is unsuccessful
+     */
+    function claimRefund() public {
+        require(isFinalized);
+        require(!goalReached());
 
-  /**
-   * @dev Overrides Crowdsale fund forwarding, sending funds to vault.
-   */
-  function _forwardFunds() internal override {
-    vault.deposit.value(msg.value)(msg.sender);
-  }
+        vault.refund(msg.sender);
+    }
 
+    /**
+     * @dev Checks whether funding goal was reached.
+     * @return Whether funding goal was reached
+     */
+    function goalReached() public view returns (bool) {
+        return weiRaised >= goal;
+    }
+
+    /**
+     * @dev vault finalization task, called when owner calls finalize()
+     */
+    function finalization() internal override virtual {
+        if (goalReached()) {
+            vault.close();
+        } else {
+            vault.enableRefunds();
+        }
+
+        super.finalization();
+    }
+
+    /**
+     * @dev Overrides Crowdsale fund forwarding, sending funds to vault.
+     */
+    function _forwardFunds() internal override virtual {
+        vault.deposit{ value: msg.value }(msg.sender);
+    }
 }

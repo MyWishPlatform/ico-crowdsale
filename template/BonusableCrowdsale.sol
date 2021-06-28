@@ -12,7 +12,7 @@ abstract contract BonusableCrowdsale is Consts, Crowdsale {
      * @return Number of tokens that can be purchased with the specified _weiAmount
      */
     function _getTokenAmount(uint256 _weiAmount)
-        internal view override returns (uint256)
+        internal view override virtual returns (uint256)
     {
         uint256 bonusRate = getBonusRate(_weiAmount);
         return (_weiAmount * bonusRate) / (1 ether);

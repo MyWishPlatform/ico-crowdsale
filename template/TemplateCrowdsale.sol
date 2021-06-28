@@ -34,8 +34,8 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     event TimesChanged(uint startTime, uint endTime, uint oldStartTime, uint oldEndTime);
     bool public initialized = false;
 
-    constructor(MintableToken _token) 
-        Crowdsale(D_RATE * TOKEN_DECIMAL_MULTIPLIER, D_COLD_WALLET, _token)
+    constructor(MintableToken _token)
+        Crowdsale(D_RATE * TOKEN_DECIMAL_MULTIPLIER, D_COLD_WALLET, address(_token))
         TimedCrowdsale(START_TIME > block.timestamp ? START_TIME : block.timestamp, D_END_TIME)
         CappedCrowdsale(D_HARD_CAP_WEI)
         //#if D_SOFT_CAP_WEI != 0
@@ -157,10 +157,6 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     //#endif
 
     //#if defined(D_MIN_VALUE_WEI) || defined(D_MAX_VALUE_WEI)
-    /**
-     * @dev override purchase validation to add extra value logic.
-     * @return true if sended more than minimal value
-     */
     function _preValidatePurchase(
         address _beneficiary,
         uint256 _weiAmount
@@ -179,5 +175,57 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
 
     function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal override(Crowdsale, MainCrowdsale) {
         MainCrowdsale._deliverTokens(_beneficiary, _tokenAmount);
+    }
+
+    function _getTokenAmount(uint256 _weiAmount)
+        internal
+        view
+        virtual
+        override(
+            Crowdsale,
+            MainCrowdsale,
+            //#if D_BONUS_TOKENS
+            BonusableCrowdsale
+            //#endif
+        )
+        returns (uint256)
+    {
+        //#if D_BONUS_TOKENS
+        return BonusableCrowdsale._getTokenAmount(_weiAmount);
+        //#else
+        return MainCrowdsale._getTokenAmount(_weiAmount);
+        //#endif
+    }
+
+    function finalization() internal
+        //#if D_SOFT_CAP_WEI != 0
+        override(RefundableCrowdsale,MainCrowdsale)
+        //#else
+        override
+        //#endif
+    {
+        //#if D_SOFT_CAP_WEI != 0
+        RefundableCrowdsale.finalization();
+        //#else
+        MainCrowdsale.finalization();
+        //#endif
+    }
+
+    function _forwardFunds() internal
+        //#if D_SOFT_CAP_WEI != 0
+        override(RefundableCrowdsale,Crowdsale)
+        //#else
+        override
+        //#endif
+    {
+        RefundableCrowdsale._forwardFunds();
+    }
+
+    function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal virtual override(Crowdsale, MainCrowdsale, TimedCrowdsale) onlyWhileOpen{
+        CappedCrowdsale._preValidatePurchase(_beneficiary, _weiAmount);
+    }
+
+    function hasClosed() public virtual override(MainCrowdsale, TimedCrowdsale) view returns (bool) {
+        return MainCrowdsale.hasClosed();
     }
 }
