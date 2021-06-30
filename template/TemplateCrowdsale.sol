@@ -67,16 +67,19 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         emit Initialized();
     }
 
-    //#if defined(D_MIN_VALUE_WEI)
     /**
      * @dev override hasClosed to add minimal value logic
      * @return true if remained to achieve less than minimal
      */
     function hasClosed() public override(MainCrowdsale, TimedCrowdsale) view returns (bool) {
+        //#if defined(D_MIN_VALUE_WEI)
         bool remainValue = (cap - weiRaised) < D_MIN_VALUE_WEI;
+        //#else
+        bool remainValue = false;
+        //#endif
         return MainCrowdsale.hasClosed() || remainValue;
     }
-    //#endif
+
 
     //#if D_CAN_CHANGE_START_TIME == true
     function setStartTime(uint _startTime) public onlyOwner {
@@ -156,7 +159,6 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
     }
     //#endif
 
-    //#if defined(D_MIN_VALUE_WEI) || defined(D_MAX_VALUE_WEI)
     function _preValidatePurchase(
         address _beneficiary,
         uint256 _weiAmount
@@ -179,7 +181,6 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         //#endif
 
     }
-    //#endif
 
     function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal override(Crowdsale, MainCrowdsale) {
         MainCrowdsale._deliverTokens(_beneficiary, _tokenAmount);
