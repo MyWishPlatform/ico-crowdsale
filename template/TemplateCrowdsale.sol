@@ -74,7 +74,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      */
     function hasClosed() public override(MainCrowdsale, TimedCrowdsale) view returns (bool) {
         bool remainValue = (cap - weiRaised) < D_MIN_VALUE_WEI;
-        return super.hasClosed() || remainValue;
+        return MainCrowdsale.hasClosed() || remainValue;
     }
     //#endif
 
@@ -161,7 +161,11 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         address _beneficiary,
         uint256 _weiAmount
     )
-        internal override(Crowdsale,MainCrowdsale,TimedCrowdsale,WhitelistedCrowdsale)
+        internal override(Crowdsale,MainCrowdsale,TimedCrowdsale
+        //#if D_WHITELIST_ENABLED
+        ,WhitelistedCrowdsale
+        //#endif
+        )
     {
         //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
         require(msg.value >= D_MIN_VALUE_WEI);
@@ -169,7 +173,11 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
         require(msg.value <= D_MAX_VALUE_WEI);
         //#endif
-        super._preValidatePurchase(_beneficiary, _weiAmount);
+        MainCrowdsale._preValidatePurchase(_beneficiary, _weiAmount);
+        //#if D_WHITELIST_ENABLED
+        WhitelistedCrowdsale._preValidatePurchase(_beneficiary, _weiAmount);
+        //#endif
+
     }
     //#endif
 
@@ -218,14 +226,11 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         override
         //#endif
     {
+        //#if D_SOFT_CAP_WEI != 0
         RefundableCrowdsale._forwardFunds();
+        //#else
+        Crowdsale._forwardFunds();
+        //#endif
     }
 
-    function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal virtual override(Crowdsale, MainCrowdsale, TimedCrowdsale) onlyWhileOpen{
-        CappedCrowdsale._preValidatePurchase(_beneficiary, _weiAmount);
-    }
-
-    function hasClosed() public virtual override(MainCrowdsale, TimedCrowdsale) view returns (bool) {
-        return MainCrowdsale.hasClosed();
-    }
 }

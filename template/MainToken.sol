@@ -4,13 +4,13 @@ pragma solidity ^0.8.4;
 import "dependencies/MintableToken.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 //#if "D_ERC" == "ERC223"
-import "sc-library/contracts/ERC223/ERC223MintableToken.sol";
+import "dependencies/sc-library/contracts/ERC223/ERC223MintableToken.sol";
 //#endif
 import "./FreezableMintableToken.sol";
 import "./Consts.sol";
 
 
-abstract contract MainToken is Consts, FreezableMintableToken, ERC20Burnable
+contract MainToken is Consts, FreezableMintableToken, ERC20Burnable
     //#if "D_ERC" == "ERC223"
     , ERC223MintableToken
     //#endif
@@ -19,19 +19,15 @@ abstract contract MainToken is Consts, FreezableMintableToken, ERC20Burnable
     event Initialized();
     bool public initialized = false;
 
-    constructor() public {
+    constructor() ERC20(TOKEN_NAME, TOKEN_SYMBOL){
         init();
         transferOwnership(TARGET_USER);
     }
+    //#else
+    constructor() ERC20(TOKEN_NAME, TOKEN_SYMBOL){
+
+    }
     //#endif
-
-    function name() public pure override returns (string memory _name) {
-        return TOKEN_NAME;
-    }
-
-    function symbol() public pure override returns (string memory _symbol) {
-        return TOKEN_SYMBOL;
-    }
 
     function decimals() public pure override returns (uint8 _decimals) {
         return TOKEN_DECIMALS_UINT8;

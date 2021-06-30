@@ -55,7 +55,7 @@ abstract contract MainCrowdsale is Consts, FinalizableCrowdsale, MintedCrowdsale
         MintedCrowdsale._deliverTokens(_beneficiary, _tokenAmount);
     }
 
-    function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal virtual override(Crowdsale, CappedCrowdsale,TimedCrowdsale) onlyWhileOpen{
+    function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal virtual override(Crowdsale, CappedCrowdsale, TimedCrowdsale) onlyWhileOpen {
         CappedCrowdsale._preValidatePurchase(_beneficiary, _weiAmount);
     }
 }
