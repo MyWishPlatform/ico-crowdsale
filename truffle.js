@@ -1,4 +1,4 @@
-const HDWalletProvider = require('truffle-hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 require('dotenv').config();
 const {
@@ -91,7 +91,7 @@ module.exports = {
             network_id: 256,
             confirmations: 2,
             timeoutBlocks: 200,
-            skipDryRun: true 
+            skipDryRun: true
         },
         hecoMainnet: {
             provider: () => new HDWalletProvider(MNEMONIC, 'https://http-mainnet.hecochain.com'),
