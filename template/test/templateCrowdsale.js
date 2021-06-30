@@ -1,7 +1,9 @@
-const BigNumber = web3.BigNumber;
+const Web3 = require("web3");
+const web3 = new Web3();
+const BN = require("bignumber.js");
 
 require('chai')
-    .use(require('chai-bignumber')(BigNumber))
+    .use(require('chai-bignumber')(BN))
     .use(require('chai-as-promised'))
     .should();
 
@@ -14,14 +16,14 @@ const Token = artifacts.require('./MainToken.sol');
 const RefundVault = artifacts.require('./RefundVault.sol');
 //#endif
 
-const BASE_RATE = new BigNumber('D_RATE');
-const SOFT_CAP_WEI = new BigNumber('D_SOFT_CAP_WEI');
-const HARD_CAP_WEI = new BigNumber('D_HARD_CAP_WEI');
+const BASE_RATE = new BN('D_RATE');
+const SOFT_CAP_WEI = new BN('D_SOFT_CAP_WEI');
+const HARD_CAP_WEI = new BN('D_HARD_CAP_WEI');
 const START_TIME = D_START_TIME; // eslint-disable-line no-undef
 const END_TIME = D_END_TIME; // eslint-disable-line no-undef
-const TOKEN_DECIMAL_MULTIPLIER = new BigNumber(10).toPower(D_DECIMALS); // eslint-disable-line no-undef
-const ETHER = web3.toWei(1, 'ether');
-const GAS_PRICE = web3.toWei(100, 'gwei');
+const TOKEN_DECIMAL_MULTIPLIER = new BN(10).pow(new BN(D_DECIMALS)); // eslint-disable-line no-undef
+const ETHER = web3.utils.toWei("1", 'ether');
+const GAS_PRICE = web3.utils.toWei("100", 'gwei');
 
 //#if D_BONUS_TOKENS
 
@@ -29,7 +31,7 @@ const GAS_PRICE = web3.toWei(100, 'gwei');
  * Mapping string to number, eg:
  * 'uint(18000000000000000000)' to 18000000000000000000
  */
-const extractBigNumber = (string) => new BigNumber(string.match(/\((\d+)\)/)[1]);
+const extractBigNumber = (string) => new BN(string.match(/\((\d+)\)/)[1]);
 
 //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
 const weiRaisedStartsBounds = 'D_WEI_RAISED_STARTS_BOUNDARIES'.split(',').map(extractBigNumber);
@@ -46,11 +48,11 @@ const weiAmountRates = 'D_WEI_AMOUNT_MILLIRATES'.split(',').map(extractBigNumber
 //#endif
 
 //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-const MIN_VALUE_WEI = new BigNumber('D_MIN_VALUE_WEI');
+const MIN_VALUE_WEI = new BN('D_MIN_VALUE_WEI');
 //#endif
 
 //#if defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-const MAX_VALUE_WEI = new BigNumber('D_MAX_VALUE_WEI');
+const MAX_VALUE_WEI = new BN('D_MAX_VALUE_WEI');
 //#endif
 
 contract('TemplateCrowdsale', accounts => {
@@ -81,7 +83,7 @@ contract('TemplateCrowdsale', accounts => {
         let rate = BASE_RATE.mul(TOKEN_DECIMAL_MULTIPLIER);
 
         //#if D_BONUS_TOKENS
-        const now = new BigNumber(await getBlockchainTimestamp());
+        const now = new BN(await getBlockchainTimestamp());
         const weiRaised = await crowdsale.weiRaised();
 
         //#if defined(D_WEI_RAISED_AND_TIME_BONUS_COUNT) && D_WEI_RAISED_AND_TIME_BONUS_COUNT > 0
@@ -186,11 +188,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         const expectedTokens = await tokensForWei(wei, crowdsale);
@@ -223,11 +225,11 @@ contract('TemplateCrowdsale', accounts => {
         wei = HARD_CAP_WEI.div(2).floor();
         //#endif
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
         await crowdsale.sendTransaction({ from: BUYER_1, value: wei }).should.eventually.be.rejected;
     });
@@ -295,11 +297,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         // send some tokens
@@ -343,11 +345,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         await crowdsale.send(wei);
@@ -412,11 +414,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
         await crowdsale.send(wei).should.eventually.be.rejected;
     });
@@ -424,14 +426,14 @@ contract('TemplateCrowdsale', accounts => {
     //#if D_BONUS_TOKENS == true
     it('#12 check buy tokens with bonuses', async () => {
         const checkBuyTokensWithTimeIncreasing = async (buyer, weiAmount, atTime) => {
-            weiAmount = new BigNumber(weiAmount);
+            weiAmount = new BN(weiAmount);
 
             //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-            weiAmount = BigNumber.max(BigNumber.min(weiAmount, MAX_VALUE_WEI), MIN_VALUE_WEI);
+            weiAmount = BN.max(BN.min(weiAmount, MAX_VALUE_WEI), MIN_VALUE_WEI);
             //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-            weiAmount = BigNumber.min(weiAmount, MAX_VALUE_WEI);
+            weiAmount = BN.min(weiAmount, MAX_VALUE_WEI);
             //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-            weiAmount = BigNumber.min(weiAmount, MIN_VALUE_WEI);
+            weiAmount = BN.min(weiAmount, MIN_VALUE_WEI);
             //#endif
 
             await revert(snapshotId);
@@ -505,11 +507,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         await crowdsale.sendTransaction({ from: BUYER_3, value: wei });
@@ -521,7 +523,7 @@ contract('TemplateCrowdsale', accounts => {
         const vaultBalance = await web3async(web3.eth, web3.eth.getBalance, vault.address);
 
         const refund = await crowdsale.claimRefund({ from: BUYER_3 });
-        const gasUsed = new BigNumber(refund.receipt.gasUsed).mul(GAS_PRICE);
+        const gasUsed = new BN(refund.receipt.gasUsed).mul(GAS_PRICE);
 
         const balanceAfterRefund = (await web3async(web3.eth, web3.eth.getBalance, BUYER_3)).add(gasUsed);
         const returnedFunds = balanceAfterRefund.sub(balanceBeforeRefund);
@@ -737,11 +739,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         await crowdsale.sendTransaction({ from: BUYER_1, value: wei }).should.eventually.be.rejected;
@@ -754,11 +756,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         const addresses = [BUYER_1, BUYER_2];
@@ -782,11 +784,11 @@ contract('TemplateCrowdsale', accounts => {
         //#endif
 
         //#if defined(D_MAX_VALUE_WEI) && defined(D_MIN_VALUE_WEI) && D_MAX_VALUE_WEI != 0 && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(BigNumber.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
+        wei = BN.max(BN.min(wei, MAX_VALUE_WEI), MIN_VALUE_WEI);
         //#elif defined(D_MAX_VALUE_WEI) && D_MAX_VALUE_WEI != 0
-        wei = BigNumber.min(wei, MAX_VALUE_WEI);
+        wei = BN.min(wei, MAX_VALUE_WEI);
         //#elif defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
-        wei = BigNumber.max(wei, MIN_VALUE_WEI);
+        wei = BN.max(wei, MIN_VALUE_WEI);
         //#endif
 
         const addresses = [BUYER_1, BUYER_2, BUYER_3];

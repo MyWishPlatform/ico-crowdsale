@@ -1,7 +1,11 @@
-const BigNumber = web3.BigNumber;
+const Web3 = require("web3");
+const web3 = new Web3();
+const BN = require("bignumber.js");
+
+console.log(web3);
 
 require('chai')
-    .use(require('chai-bignumber')(BigNumber))
+    .use(require('chai-bignumber')(BN))
     .use(require('chai-as-promised'))
     .should();
 
@@ -17,7 +21,7 @@ const FailingERC223Receiver = artifacts.require('./FailingERC223Receiver.sol');
 const ERC223ReceiverWithoutTokenFallback = artifacts.require('./ERC223ReceiverWithoutTokenFallback.sol');
 
 //#if D_PREMINT_COUNT > 0
-const extractBigNumber = (string) => new BigNumber(string.match(/\((\d+)\)/)[1]);
+const extractBigNumber = (string) => new BN(string.match(/\((\d+)\)/)[1]);
 
 const premintAddresses = 'D_PREMINT_ADDRESSES'.split(',')
     .map(s => s.match(/\((\w+)\)/)[1]);
@@ -57,7 +61,7 @@ contract('Token', accounts => {
     it('#1 construct', async () => {
         const token = await Token.new();
         token.address.should.have.length(42);
-        await token.owner().should.eventually.be.equals(TOKEN_OWNER);
+        (await token.owner()).should.eventually.be.equals(TOKEN_OWNER);
     });
 
     //#if !D_CONTINUE_MINTING && defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
