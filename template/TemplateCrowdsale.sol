@@ -192,9 +192,9 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         virtual
         override(
             Crowdsale,
-            MainCrowdsale,
+            MainCrowdsale
             //#if D_BONUS_TOKENS
-            BonusableCrowdsale
+            ,BonusableCrowdsale
             //#endif
         )
         returns (uint256)
