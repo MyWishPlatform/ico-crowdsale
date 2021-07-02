@@ -64,4 +64,14 @@ contract MainToken is Consts, FreezableMintableToken, ERC20Burnable
         emit Initialized();
     }
     //#endif
+
+    //#if "D_ERC" == "ERC223"
+    function transfer(address _to, uint256 _value) public virtual override(ERC20,ERC223MintableToken) returns (bool) {
+        return ERC223Token.transfer(_to, _value);
+    }
+
+    function mint(address _to, uint256 _amount) onlyOwner canMint public override(MintableToken,ERC223MintableToken) returns (bool) {
+        return ERC223MintableToken.mint(_to, _amount);
+    }
+    //#endif
 }

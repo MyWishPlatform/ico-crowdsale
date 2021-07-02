@@ -2,8 +2,8 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "./ERC223Basic.sol";
-import "./ERC223Receiver.sol";
+import "dependencies/sc-library/contracts/ERC223/ERC223Basic.sol";
+import "dependencies/sc-library/contracts/ERC223/ERC223Receiver.sol";
 
 
 /**
@@ -56,7 +56,7 @@ abstract contract ERC223Token is ERC223Basic, ERC223Receiver {
    * @param _to    Receiver address.
    * @param _value Amount of tokens that will be transferred.
    */
-  function transfer(address _to, uint256 _value) public override returns (bool) {
+  function transfer(address _to, uint256 _value) public virtual override returns (bool) {
     bytes memory empty;
     return transfer(_to, _value, empty);
   }

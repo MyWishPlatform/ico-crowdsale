@@ -6,7 +6,7 @@ import "dependencies/crowdsale/distribution/RefundableCrowdsale.sol";
 //#endif
 import "./MainCrowdsale.sol";
 //#if D_AUTO_FINALISE
-import "../dependencies/sc-library/contracts/Checkable.sol";
+import "dependencies/sc-library/contracts/Checkable.sol";
 //#endif
 //#if D_BONUS_TOKENS
 import "./BonusableCrowdsale.sol";
@@ -163,7 +163,11 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         address _beneficiary,
         uint256 _weiAmount
     )
-        internal override(Crowdsale,MainCrowdsale,TimedCrowdsale
+        internal override(
+        //#if D_BONUS_TOKENS
+        Crowdsale,
+        //#endif
+        MainCrowdsale,TimedCrowdsale
         //#if D_WHITELIST_ENABLED
         ,WhitelistedCrowdsale
         //#endif

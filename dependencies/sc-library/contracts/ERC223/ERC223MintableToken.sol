@@ -9,7 +9,8 @@ import "dependencies/sc-library/contracts/ERC223/ERC223Token.sol";
  * @title ERC223MintableToken
  * @dev ERC223 implementation of MintableToken.
  */
-contract ERC223MintableToken is MintableToken, ERC223Token {
+abstract contract ERC223MintableToken is MintableToken, ERC223Token {
+  using Address for address;
   /**
    * @dev Function to mint tokens. Invokes token fallback function on recipient address.
    * @param _to The address that will receive the minted tokens.
@@ -22,7 +23,7 @@ contract ERC223MintableToken is MintableToken, ERC223Token {
   )
     onlyOwner
     canMint
-    public override
+    public virtual override
     returns (bool)
   {
     bytes memory empty;
@@ -38,5 +39,9 @@ contract ERC223MintableToken is MintableToken, ERC223Token {
       empty
     );
     return true;
+  }
+
+  function transfer(address _to, uint256 _value) public virtual override(ERC20,ERC223Token) returns (bool) {
+    return ERC223Token.transfer(_to, _value);
   }
 }

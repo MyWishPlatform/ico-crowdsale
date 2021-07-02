@@ -36,6 +36,7 @@ abstract contract MintableToken is ERC20, Ownable {
     onlyOwner
     canMint
     public
+    virtual
     returns (bool)
   {
     _mint(_to, _amount);
