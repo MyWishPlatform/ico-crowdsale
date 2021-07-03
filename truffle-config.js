@@ -30,7 +30,7 @@ module.exports = {
             network_id: "*",
             gas: 30000000
         }, */
-        /*ropsten: {
+        ropsten: {
             provider: () => new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/" + INFURA_ID_PROJECT),
             network_id: 3,
             gas: DEPLOY_GAS_LIMIT,
@@ -99,7 +99,7 @@ module.exports = {
             confirmations: 2,
             timeoutBlocks: 200,
             skipDryRun: false
-        }*/
+        }
     },
 
     compilers: {
@@ -108,7 +108,7 @@ module.exports = {
             settings: {
                 optimizer: {
                     enabled: true,
-                    runs: 999999
+                    runs: 200
                 }
             }
         }
