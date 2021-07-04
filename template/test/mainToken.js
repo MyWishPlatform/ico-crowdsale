@@ -1,24 +1,48 @@
-const Web3 = require("web3");
-const web3 = new Web3();
-const BN = require("bignumber.js");
-
-console.log(web3);
-
+const { expect } = require('chai');
+const { BN, expectEvent, expectRevert, makeInterfaceId, time } = require('@openzeppelin/test-helpers');
+const { exitCode, hasUncaughtExceptionCaptureCallback } = require('process');
 require('chai')
-    .use(require('chai-bignumber')(BN))
     .use(require('chai-as-promised'))
     .should();
 
-const { revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { web3async } = require('sc-library/test-utils/web3Utils');
+
+const MINUS_ONE = new BN(-1);
+const ZERO = new BN(0);
+const ONE = new BN(1);
+const TWO = new BN(2);
+const THREE = new BN(3);
+const FOUR = new BN(4);
+const FIVE = new BN(5);
+const SIX = new BN(6);
+const SEVEN = new BN(7);
+const EIGHT = new BN(8);
+const NINE = new BN(9);
+const TEN = new BN(10);
+const TWENTY = new BN(20);
+
+// const Web3 = require("web3");
+// const web3 = new Web3();
+// const BN = require("bignumber.js");
+
+// console.log(web3);
+
+// require('chai')
+//     .use(require('chai-bignumber')(BN))
+//     .use(require('chai-as-promised'))
+//     .should();
+
+// const { revert, snapshot } = require('sc-library/test-utils/evmMethods');
 const { estimateConstructGas } = require('sc-library/test-utils/web3Utils');
 
-const Token = artifacts.require('./MainToken.sol');
+const Token = artifacts.require('MainToken');
 //#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN
-const Crowdsale = artifacts.require('./TemplateCrowdsale.sol');
+const Crowdsale = artifacts.require('TemplateCrowdsale');
 //#endif
-const SuccessfulERC223Receiver = artifacts.require('./SuccessfulERC223Receiver.sol');
-const FailingERC223Receiver = artifacts.require('./FailingERC223Receiver.sol');
-const ERC223ReceiverWithoutTokenFallback = artifacts.require('./ERC223ReceiverWithoutTokenFallback.sol');
+const SuccessfulERC223Receiver = artifacts.require('SuccessfulERC223Receiver');
+const FailingERC223Receiver = artifacts.require('FailingERC223Receiver');
+const ERC223ReceiverWithoutTokenFallback = artifacts.require('ERC223ReceiverWithoutTokenFallback');
 
 //#if D_PREMINT_COUNT > 0
 const extractBigNumber = (string) => new BN(string.match(/\((\d+)\)/)[1]);
@@ -68,14 +92,14 @@ contract('Token', accounts => {
     it('#2 cannot mint if CONTINUE_MINTING is false', async () => {
         const token = await Token.new();
 
-        const tokensToMint = web3.toWei(1, 'ether');
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
         await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER }).should.eventually.be.rejected;
     });
     //#else
     it('#2 minting', async () => {
         const token = await Token.new();
 
-        const tokensToMint = web3.toWei(1, 'ether');
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
         await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER });
         const balance = await token.balanceOf(BUYER_1);
         balance.should.bignumber.be.equals(tokensToMint);
@@ -84,7 +108,7 @@ contract('Token', accounts => {
     it('#3 minting after it finished', async () => {
         const token = await Token.new();
 
-        const tokensToMint = web3.toWei(1, 'ether');
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
 
         await token.finishMinting({ from: TOKEN_OWNER });
         await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER }).should.eventually.be.rejected;
@@ -93,18 +117,18 @@ contract('Token', accounts => {
     it('#4 burn', async () => {
         const token = await Token.new();
 
-        const tokensToMint = web3.toWei(1, 'ether');
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
         await token.mint(OWNER, tokensToMint, { from: TOKEN_OWNER });
-        await token.burn(tokensToMint + 1).should.eventually.be.rejected;
-        await token.burn(tokensToMint / 2);
+        await token.burn(tokensToMint.add(ONE)).should.eventually.be.rejected;
+        await token.burn(tokensToMint.div(TWO));
     });
 
-    //#if "D_ERC" == 23
+    //#if "D_ERC" == "ERC223"
     it('#5 erc223 transfer to contract', async () => {
         const token = await Token.new();
         const receiver = await SuccessfulERC223Receiver.new();
 
-        const tokensToTransfer = web3.toWei(1, 'ether');
+        const tokensToTransfer = web3.utils.toWei(ONE, 'ether');
         await token.mint(BUYER_1, tokensToTransfer, { from: TOKEN_OWNER });
 
         await token.transfer(receiver.address, tokensToTransfer, { from: BUYER_1 });
@@ -117,7 +141,7 @@ contract('Token', accounts => {
         const token = await Token.new();
         const failingReceiver = await FailingERC223Receiver.new();
 
-        const tokensToTransfer = web3.toWei(1, 'wei');
+        const tokensToTransfer = web3.utils.toWei(ONE, 'wei');
         await token.mint(BUYER_1, tokensToTransfer, { from: TOKEN_OWNER });
 
         await token.transfer(failingReceiver.address, tokensToTransfer, { from: BUYER_1 })
@@ -130,7 +154,7 @@ contract('Token', accounts => {
         const token = await Token.new();
         const failingReceiver = await ERC223ReceiverWithoutTokenFallback.new();
 
-        const tokensToTransfer = web3.toWei(1, 'wei');
+        const tokensToTransfer = web3.utils.toWei(ONE, 'wei');
         await token.mint(BUYER_1, tokensToTransfer, { from: TOKEN_OWNER });
 
         await token.transfer(failingReceiver.address, tokensToTransfer, { from: BUYER_1 })

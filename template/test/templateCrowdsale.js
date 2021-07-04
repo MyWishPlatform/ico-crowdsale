@@ -1,19 +1,43 @@
-const Web3 = require("web3");
-const web3 = new Web3();
-const BN = require("bignumber.js");
-
+const { expect } = require('chai');
+const { BN, expectEvent, expectRevert, makeInterfaceId, time } = require('@openzeppelin/test-helpers');
+const { exitCode, hasUncaughtExceptionCaptureCallback } = require('process');
 require('chai')
-    .use(require('chai-bignumber')(BN))
     .use(require('chai-as-promised'))
     .should();
 
-const { timeTo, increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+// const { web3async } = require('sc-library/test-utils/web3Utils');
+
+const MINUS_ONE = new BN(-1);
+const ZERO = new BN(0);
+const ONE = new BN(1);
+const TWO = new BN(2);
+const THREE = new BN(3);
+const FOUR = new BN(4);
+const FIVE = new BN(5);
+const SIX = new BN(6);
+const SEVEN = new BN(7);
+const EIGHT = new BN(8);
+const NINE = new BN(9);
+const TEN = new BN(10);
+const TWENTY = new BN(20);
+
+// const Web3 = require("web3");
+// const web3 = new Web3();
+// const BN = require("bignumber.js");
+
+// require('chai')
+//     .use(require('chai-bignumber')(BN))
+//     .use(require('chai-as-promised'))
+//     .should();
+
+// const { timeTo, increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
 const { web3async, estimateConstructGas } = require('sc-library/test-utils/web3Utils');
 
-const Crowdsale = artifacts.require('./TemplateCrowdsale.sol');
-const Token = artifacts.require('./MainToken.sol');
+const Crowdsale = artifacts.require('TemplateCrowdsale');
+const Token = artifacts.require('MainToken');
 //#if D_SOFT_CAP_WEI != 0
-const RefundVault = artifacts.require('./RefundVault.sol');
+const RefundVault = artifacts.require('RefundVault');
 //#endif
 
 const BASE_RATE = new BN('D_RATE');
@@ -22,8 +46,8 @@ const HARD_CAP_WEI = new BN('D_HARD_CAP_WEI');
 const START_TIME = D_START_TIME; // eslint-disable-line no-undef
 const END_TIME = D_END_TIME; // eslint-disable-line no-undef
 const TOKEN_DECIMAL_MULTIPLIER = new BN(10).pow(new BN(D_DECIMALS)); // eslint-disable-line no-undef
-const ETHER = web3.utils.toWei("1", 'ether');
-const GAS_PRICE = web3.utils.toWei("100", 'gwei');
+const ETHER = web3.utils.toWei(ONE, 'ether');
+const GAS_PRICE = web3.utils.toWei(TEN.mul(TEN), 'gwei');
 
 //#if D_BONUS_TOKENS
 
@@ -130,7 +154,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#0 balances', () => {
         accounts.forEach((account, index) => {
             web3.eth.getBalance(account, function (_, balance) {
-                const etherBalance = web3.fromWei(balance, 'ether');
+                const etherBalance = web3.utils.fromWei(balance, 'ether');
                 console.info(`Account ${index} (${account}) balance is ${etherBalance}`);
             });
         });
@@ -276,7 +300,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.addAddressToWhitelist(BUYER_3, { from: TARGET_USER });
         //#endif
 
-        const eth = HARD_CAP_WEI.add(web3.toWei(1, 'ether'));
+        const eth = HARD_CAP_WEI.add(web3.utils.toWei(ONE, 'ether'));
 
         await crowdsale.sendTransaction({ from: BUYER_3, value: eth }).should.eventually.be.rejected;
     });
@@ -310,7 +334,7 @@ contract('TemplateCrowdsale', accounts => {
         // try to finalize before the END
         await crowdsale.finalize({ from: TARGET_USER }).should.eventually.be.rejected;
 
-        await increaseTime(END_TIME - START_TIME + 1);
+        await increaseTime(END_TIME.sub(START_TIME).add(ONE));
         // finalize after the END time
         await crowdsale.finalize({ from: TARGET_USER });
         // try to transfer some tokens (it should work now)
@@ -333,7 +357,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#9 check tokens locking', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
-        await increaseTime(START_TIME - now);
+        await increaseTime(START_TIME.sub(now));
 
         //#if D_WHITELIST_ENABLED
         await crowdsale.addAddressToWhitelist(OWNER, { from: TARGET_USER });
@@ -366,7 +390,7 @@ contract('TemplateCrowdsale', accounts => {
     it('#10 check finish crowdsale because hardcap', async () => {
         const crowdsale = await createCrowdsale();
         const token = Token.at(await crowdsale.token());
-        await increaseTime(START_TIME - now);
+        await increaseTime(START_TIME.sub(now));
 
         //#if D_WHITELIST_ENABLED
         await crowdsale.addAddressToWhitelist(BUYER_3, { from: TARGET_USER });
@@ -402,7 +426,7 @@ contract('TemplateCrowdsale', accounts => {
 
     it('#11 check finish crowdsale because time', async () => {
         const crowdsale = await createCrowdsale();
-        await increaseTime(END_TIME - now);
+        await increaseTime(END_TIME.sub(now));
 
         //#if D_WHITELIST_ENABLED
         await crowdsale.addAddressToWhitelist(OWNER, { from: TARGET_USER });
@@ -608,7 +632,7 @@ contract('TemplateCrowdsale', accounts => {
         await crowdsale.setEndTime(START_TIME - 1, { from: TARGET_USER }).should.eventually.be.rejected;
 
         // move till ended
-        await increaseTime(NEW_END_TIME - now + 1);
+        await increaseTime(NEW_END_TIME.sub(now).add(ONE));
         const hasEnded = await crowdsale.hasEnded();
         hasEnded.should.be.equals(true, 'hasEnded must be true, time shifted to new end time');
     });
