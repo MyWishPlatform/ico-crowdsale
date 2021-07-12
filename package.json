@@ -32,10 +32,12 @@
   "homepage": "https://github.com/MyWishPlatform/ico-crowdsale#readme",
   "dependencies": {
     "@openzeppelin/contracts": "^4.1.0",
+    "@openzeppelin/test-helpers": "^0.5.12",
     "@truffle/hdwallet-provider": "^1.4.1",
     "dotenv": "^10.0.0",
     "sc-library": "github:MyWishPlatform/sc-library",
-    "truffle": "^5.3.13"
+    "truffle": "^5.3.13",
+    "truffle-plugin-verify": "^0.5.10"
   },
   "devDependencies": {
     "bignumber.js": "^7.2.1",

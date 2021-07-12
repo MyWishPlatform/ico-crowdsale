@@ -1,11 +1,12 @@
 const { expect } = require('chai');
-const { BN, expectEvent, expectRevert, makeInterfaceId, time } = require('@openzeppelin/test-helpers');
+const { BN, expectEvent, expectRevert, makeInterfaceId, time, snapshot } = require('@openzeppelin/test-helpers');
 const { exitCode, hasUncaughtExceptionCaptureCallback } = require('process');
 require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const { increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+//const {snapshot} = require('openzeppelin-test-helpers/src/snapshot');
+//const { increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
 const { web3async } = require('sc-library/test-utils/web3Utils');
 
 const MINUS_ONE = new BN(-1);
@@ -64,28 +65,30 @@ contract('Token', accounts => {
     TOKEN_OWNER = TARGET_USER;
     //#endif
 
-    let snapshotId;
-
     beforeEach(async () => {
-        snapshotId = (await snapshot()).result;
+        const token = await Token.new();
     });
 
-    afterEach(async () => {
-        await revert(snapshotId);
-    });
+    // afterEach(async () => {
+    //     await snapshotId.restore();
+    // });
 
-    it('#0 gas usage', async () => {
-        await estimateConstructGas(Token).then(console.info);
-    });
+    // it('#0 gas usage', async () => {
+    //     let tx = await Token.new();
+    //     console.log(tx.constructor.class_defaults.gas);
+    //     console.log(tx.constructor);
+    //     //await estimateConstructGas(Token).then(console.info);
+    // });
 
     it('#0 3/4 precheck', async () => {
+        const token = await Token.new();
         TARGET_USER.should.be.equals('D_CONTRACTS_OWNER', 'it must be the same');
     });
 
     it('#1 construct', async () => {
         const token = await Token.new();
         token.address.should.have.length(42);
-        (await token.owner()).should.eventually.be.equals(TOKEN_OWNER);
+        (await token.owner()).should.be.equal(TOKEN_OWNER);
     });
 
     //#if !D_CONTINUE_MINTING && defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
