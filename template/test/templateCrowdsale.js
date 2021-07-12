@@ -136,14 +136,14 @@ contract('TemplateCrowdsale', accounts => {
         return (await getRate(weiAmount, crowdsale)).mul(weiAmount).div(ETHER).floor();
     };
 
-    beforeEach(async () => {
-        snapshotId = (await snapshot()).result;
-        now = await getBlockchainTimestamp();
-    });
+    // beforeEach(async () => {
+    //     snapshotId = (await snapshot()).result;
+    //     now = await getBlockchainTimestamp();
+    // });
 
-    afterEach(async () => {
-        await revert(snapshotId);
-    });
+    // afterEach(async () => {
+    //     await revert(snapshotId);
+    // });
 
     it('#0 gas usage', async () => {
         const token = await Token.new();
