@@ -73,12 +73,11 @@ contract('Token', accounts => {
     //     await snap.restore();
     // });
 
-    // it('#0 gas usage', async () => {
-    //     let tx = await Token.new();
-    //     console.log(tx.constructor.class_defaults.gas);
-    //     console.log(tx.constructor);
-    //     //await estimateConstructGas(Token).then(console.info);
-    // });
+    it('#0 gas usage', async () => {
+        let token = await Token.new();
+        let receipt = await web3.eth.getTransactionReceipt(token.transactionHash);
+        console.log(receipt.gasUsed);
+    });
 
     it('#0 3/4 precheck', async () => {
         const token = await Token.new();
