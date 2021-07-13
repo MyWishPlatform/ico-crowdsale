@@ -65,12 +65,12 @@ contract('Token', accounts => {
     TOKEN_OWNER = TARGET_USER;
     //#endif
 
-    beforeEach(async () => {
-        const token = await Token.new();
-    });
+    // beforeEach(async () => {
+    //     const snap = await snapshot();
+    // });
 
     // afterEach(async () => {
-    //     await snapshotId.restore();
+    //     await snap.restore();
     // });
 
     // it('#0 gas usage', async () => {
