@@ -9,7 +9,7 @@ module.exports = {
             network_id: '*', // eslint-disable-line camelcase
             provider: ganache.provider({
                 total_accounts: 6, // eslint-disable-line camelcase
-                default_balance_ether: BigNumber(1e+99), // eslint-disable-line camelcase
+                default_balance_ether: BigNumber(10000000000000000000000000000000000000000000000000000000), // eslint-disable-line camelcase
                 mnemonic: 'mywish',
                 time: new Date('2017-10-10T15:00:00Z'),
                 debug: false,

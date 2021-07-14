@@ -71,7 +71,13 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      * @dev override hasClosed to add minimal value logic
      * @return true if remained to achieve less than minimal
      */
-    function hasClosed() public override(MainCrowdsale, TimedCrowdsale) view returns (bool) {
+    function hasClosed() public override (MainCrowdsale
+    //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS)) || (D_AUTO_FINALISE && !(D_SOFT_CAP_WEI != 0))
+    )
+    //#else
+    , TimedCrowdsale)
+    //#endif
+    view returns (bool) {
         //#if defined(D_MIN_VALUE_WEI)
         bool remainValue = (cap - weiRaised) < D_MIN_VALUE_WEI;
         //#else
@@ -158,7 +164,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         isFinalized = true;
     }
     //#endif
-
+    
     function _preValidatePurchase(
         address _beneficiary,
         uint256 _weiAmount
@@ -167,11 +173,15 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         //#if D_BONUS_TOKENS
         Crowdsale,
         //#endif
-        MainCrowdsale,TimedCrowdsale
+        MainCrowdsale
         //#if D_WHITELIST_ENABLED
         ,WhitelistedCrowdsale
         //#endif
+        //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS)) || (D_AUTO_FINALISE && !(D_SOFT_CAP_WEI != 0))
         )
+        //#else
+        ,TimedCrowdsale)
+        //#endif
     {
         //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
         require(msg.value >= D_MIN_VALUE_WEI);
@@ -186,7 +196,14 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
 
     }
 
-    function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal override(Crowdsale, MainCrowdsale) {
+    function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal override(
+        MainCrowdsale
+        //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS))
+        )
+        //#else
+        , Crowdsale)
+        //#endif
+    {
         MainCrowdsale._deliverTokens(_beneficiary, _tokenAmount);
     }
 
@@ -195,12 +212,15 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         view
         virtual
         override(
-            Crowdsale,
             MainCrowdsale
             //#if D_BONUS_TOKENS
             ,BonusableCrowdsale
             //#endif
-        )
+            //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS)) || (D_AUTO_FINALISE && !(D_SOFT_CAP_WEI != 0))
+            )
+            //#else
+            , Crowdsale)
+            //#endif
         returns (uint256)
     {
         //#if D_BONUS_TOKENS
