@@ -214,7 +214,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
             //#if D_BONUS_TOKENS
             ,BonusableCrowdsale
             //#endif
-            //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS) && !(D_WHITELIST_ENABLED))
+            //#if (!(D_SOFT_CAP_WEI != 0) && !(D_WHITELIST_ENABLED))
             )
             //#else
             , Crowdsale)
