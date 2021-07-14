@@ -666,7 +666,7 @@ contract('TemplateCrowdsale', accounts => {
         const MIDDLE_TIME = START_TIME + (END_TIME - START_TIME) / 2;
 
         // move till new end time will be in the past
-        await timeTo(MIDDLE_TIME);
+        await time.increaseTo(new BN(MIDDLE_TIME).add(ONE));
 
         // end time in the past
         await crowdsale.setEndTime(MIDDLE_TIME).should.eventually.be.rejected;
@@ -697,14 +697,14 @@ contract('TemplateCrowdsale', accounts => {
         const crowdsale = await createCrowdsale();
 
         // move till started
-        await timeTo(START_TIME + 1);
+        await time.increaseTo(new BN(START_TIME).add(ONE));
 
         const NEW_START_TIME = Math.floor(START_TIME + (END_TIME - START_TIME) / 2);
 
         await crowdsale.setStartTime(NEW_START_TIME, { from: TARGET_USER }).should.eventually.be.rejected;
 
         // move till ended
-        await timeTo(END_TIME + 1);
+        await time.increaseTo(new BN(END_TIME).add(ONE));
 
         // impossible to change start time, because already ended
         await crowdsale.setStartTime(END_TIME + 10, { from: TARGET_USER }).should.eventually.be.rejected;
@@ -736,10 +736,10 @@ contract('TemplateCrowdsale', accounts => {
         const newEndTime = await crowdsale.endTime();
         Number(newEndTime).should.be.equals(MIDDLE_TIME + 1, 'end time was not changed');
 
-        await timeTo(MIDDLE_TIME - 10);
+        await time.increaseTo(new BN(MIDDLE_TIME).sub(TEN));
         await crowdsale.setTimes(MIDDLE_TIME, MIDDLE_TIME + 20, { from: TARGET_USER });
 
-        await timeTo(MIDDLE_TIME + 10);
+        await time.increaseTo(new BN(MIDDLE_TIME).add(TEN));
         // already started
         await crowdsale.setTimes(MIDDLE_TIME + 1, END_TIME, { from: TARGET_USER }).should.eventually.be.rejected;
         // end time in the past
@@ -750,7 +750,7 @@ contract('TemplateCrowdsale', accounts => {
         const finalEndTime = await crowdsale.endTime();
         Number(finalEndTime).should.be.equals(MIDDLE_TIME + 30, 'end time was not changed');
 
-        await timeTo(MIDDLE_TIME + 31);
+        await time.increaseTo(new BN(MIDDLE_TIME).add(TEN.mul(THREE).add(ONE)));
         // already ended
         await crowdsale.setTimes(MIDDLE_TIME, END_TIME, { from: TARGET_USER }).should.eventually.be.rejected;
     });
@@ -759,7 +759,7 @@ contract('TemplateCrowdsale', accounts => {
     //#if D_WHITELIST_ENABLED
     it('#25 check buy not by whitelisted', async () => {
         const crowdsale = await createCrowdsale();
-        await timeTo(START_TIME);
+        await time.increaseTo(new BN(START_TIME).add(ONE));
 
         let wei = SOFT_CAP_WEI.div(TWO);
         //#if D_SOFT_CAP_WEI == 0
@@ -798,7 +798,7 @@ contract('TemplateCrowdsale', accounts => {
             snapshotId = (await snapshot()).result;
 
             const crowdsale = await createCrowdsale();
-            await timeTo(START_TIME);
+            await time.increaseTo(new BN(START_TIME).add(ONE));
 
             await crowdsale.addAddressesToWhitelist(addresses, { from: TARGET_USER });
             await crowdsale.sendTransaction({ from: addresses[i], value: wei });
@@ -822,7 +822,7 @@ contract('TemplateCrowdsale', accounts => {
         const addresses = [BUYER_1, BUYER_2, BUYER_3];
 
         const crowdsale = await createCrowdsale();
-        await timeTo(START_TIME);
+        await time.increaseTo(new BN(START_TIME).add(ONE));
 
         await crowdsale.addAddressesToWhitelist(addresses, { from: TARGET_USER });
 

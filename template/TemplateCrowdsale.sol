@@ -72,11 +72,10 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
      * @return true if remained to achieve less than minimal
      */
     function hasClosed() public override (MainCrowdsale
-    //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS)) || (D_AUTO_FINALISE && !(D_SOFT_CAP_WEI != 0))
-    )
-    //#else
-    , TimedCrowdsale)
+    //#if D_SOFT_CAP_WEI != 0
+    , TimedCrowdsale
     //#endif
+    )
     view returns (bool) {
         //#if defined(D_MIN_VALUE_WEI)
         bool remainValue = (cap - weiRaised) < D_MIN_VALUE_WEI;
@@ -177,11 +176,10 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
         //#if D_WHITELIST_ENABLED
         ,WhitelistedCrowdsale
         //#endif
-        //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS)) || (D_AUTO_FINALISE && !(D_SOFT_CAP_WEI != 0))
-        )
-        //#else
-        ,TimedCrowdsale)
+        //#if D_SOFT_CAP_WEI != 0
+        ,TimedCrowdsale
         //#endif
+        )
     {
         //#if defined(D_MIN_VALUE_WEI) && D_MIN_VALUE_WEI != 0
         require(msg.value >= D_MIN_VALUE_WEI);
@@ -198,7 +196,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
 
     function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal override(
         MainCrowdsale
-        //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS))
+        //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS) && !(D_WHITELIST_ENABLED))
         )
         //#else
         , Crowdsale)
@@ -216,7 +214,7 @@ contract TemplateCrowdsale is Consts, MainCrowdsale
             //#if D_BONUS_TOKENS
             ,BonusableCrowdsale
             //#endif
-            //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS)) || (D_AUTO_FINALISE && !(D_SOFT_CAP_WEI != 0))
+            //#if (!(D_SOFT_CAP_WEI != 0) && !(D_BONUS_TOKENS) && !(D_WHITELIST_ENABLED))
             )
             //#else
             , Crowdsale)
