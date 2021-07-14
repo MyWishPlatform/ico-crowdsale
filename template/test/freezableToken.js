@@ -51,7 +51,7 @@ contract('Freezable Token', accounts => {
         const token = await Token.new();
         token.address.should.have.length(42);
     });
-
+    //#if !(defined(D_ONLY_TOKEN) && D_ONLY_TOKEN == true && D_CONTINUE_MINTING == false)
     it('#2 mint and freeze', async () => {
         const token = await Token.new();
         await time.advanceBlock();
@@ -258,4 +258,5 @@ contract('Freezable Token', accounts => {
         await token.releaseAll({ from: BUYER_1 });
         (await token.balanceOf(BUYER_1)).should.bignumber.be.equals(web3.utils.toWei(FOUR, 'ether'));
     });
+    //#endif
 });
