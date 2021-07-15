@@ -1,0 +1,145 @@
+const { expect } = require('chai');
+const { BN, expectEvent, expectRevert, makeInterfaceId, time, snapshot } = require('@openzeppelin/test-helpers');
+const { exitCode, hasUncaughtExceptionCaptureCallback } = require('process');
+require('chai')
+    .use(require('chai-as-promised'))
+    .should();
+
+//const {snapshot} = require('openzeppelin-test-helpers/src/snapshot');
+//const { increaseTime, revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { web3async } = require('sc-library/test-utils/web3Utils');
+
+const MINUS_ONE = new BN(-1);
+const ZERO = new BN(0);
+const ONE = new BN(1);
+const TWO = new BN(2);
+const THREE = new BN(3);
+const FOUR = new BN(4);
+const FIVE = new BN(5);
+const SIX = new BN(6);
+const SEVEN = new BN(7);
+const EIGHT = new BN(8);
+const NINE = new BN(9);
+const TEN = new BN(10);
+const TWENTY = new BN(20);
+
+// const Web3 = require("web3");
+// const web3 = new Web3();
+// const BN = require("bignumber.js");
+
+// console.log(web3);
+
+// require('chai')
+//     .use(require('chai-bignumber')(BN))
+//     .use(require('chai-as-promised'))
+//     .should();
+
+// const { revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { estimateConstructGas } = require('sc-library/test-utils/web3Utils');
+
+const Token = artifacts.require('MainToken');
+
+const Crowdsale = artifacts.require('TemplateCrowdsale');
+
+const SuccessfulERC223Receiver = artifacts.require('SuccessfulERC223Receiver');
+const FailingERC223Receiver = artifacts.require('FailingERC223Receiver');
+const ERC223ReceiverWithoutTokenFallback = artifacts.require('ERC223ReceiverWithoutTokenFallback');
+
+
+const extractBigNumber = (string) => new BN(string.match(/\((\d+)\)/)[1]);
+
+const premintAddresses = 'address(0x0000001B717aDD3e840343364eC9d971fBa3955C),address(0x0000002b717aDD3E840343364EC9d971fbA3955C),address(0x0000003b717adD3E840343364eC9d971FBa3955c)'.split(',')
+    .map(s => s.match(/\((\w+)\)/)[1]);
+
+const premintAmounts = 'uint(1000000),uint(2000000),uint(3000000)'.split(',')
+    .map(s => extractBigNumber(s));
+
+
+contract('Token', accounts => {
+    const OWNER = accounts[0];
+    const BUYER_1 = accounts[1];
+    const TARGET_USER = accounts[5];
+
+    let TOKEN_OWNER = OWNER;
+    
+
+    // beforeEach(async () => {
+    //     const snap = await snapshot();
+    // });
+
+    // afterEach(async () => {
+    //     await snap.restore();
+    // });
+
+    it('#0 gas usage', async () => {
+        let token = await Token.new();
+        let receipt = await web3.eth.getTransactionReceipt(token.transactionHash);
+        console.log(receipt.gasUsed);
+    });
+
+    it('#0 3/4 precheck', async () => {
+        const token = await Token.new();
+        TARGET_USER.should.be.equals('0x8FFFF2C69F000C790809F6b8F9AbfcBaaB46b322', 'it must be the same');
+    });
+
+    it('#1 construct', async () => {
+        const token = await Token.new();
+        token.address.should.have.length(42);
+        (await token.owner()).should.be.equal(TOKEN_OWNER);
+    });
+
+    
+    it('#2 minting', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
+        await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER });
+        const balance = await token.balanceOf(BUYER_1);
+        balance.should.bignumber.be.equals(tokensToMint);
+    });
+
+    it('#3 minting after it finished', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
+
+        await token.finishMinting({ from: TOKEN_OWNER });
+        await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER }).should.eventually.be.rejected;
+    });
+
+    it('#4 burn', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.utils.toWei(ONE, 'ether');
+        await token.mint(OWNER, tokensToMint, { from: TOKEN_OWNER });
+        await token.burn(tokensToMint.add(ONE)).should.eventually.be.rejected;
+        await token.burn(tokensToMint.div(TWO));
+    });
+
+    
+    
+
+    
+    it('#8 check initial freezes', async () => {
+        const token = await Token.new();
+        
+        const crowdsale = await Crowdsale.new(token.address);
+        await token.transferOwnership(crowdsale.address);
+        await crowdsale.init();
+        
+
+        const map = {};
+        for (let i = 0; i < premintAddresses.length; i++) {
+            map[premintAddresses[i]] = typeof map[premintAddresses[i]] === 'undefined'
+                ? premintAmounts[i]
+                : map[premintAddresses[i]].add(premintAmounts[i]);
+        }
+
+        await Promise.all(Object.keys(map).map(async (key) => {
+            (await token.balanceOf(key)).should.bignumber.be.equals(map[key]);
+        }));
+    });
+    
+});
+
+
